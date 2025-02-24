@@ -66,6 +66,7 @@ const ConfirmBooking = () => {
         if (res.status === 200) {
           if (res.data.success) {
             toast.success(res.data.message);
+            window.location.href = '/user/booking';
           } else if (res.data.success === false) {
             toast.error(res.data.message);
           }

@@ -251,7 +251,7 @@ const Bookings = () => {
         </h2>
         <img
           className='h-40 w-full object-cover rounded-lg mb-4'
-          src={getImageUrl(booking.bikeId)}
+          src={booking.bikeDetails.imageUrl}
           alt={booking.bikeDetails.bikeName}
         />
         <div className='mb-4'>
