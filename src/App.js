@@ -35,6 +35,10 @@ function App() {
       <Navbar />
       <ToastContainer />
       <Routes>
+      <Route
+          path='/'
+          element={<Homepage />}
+        />
         <Route
           path='/register'
           element={<Register />}

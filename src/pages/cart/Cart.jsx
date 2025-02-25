@@ -182,8 +182,6 @@ const Cart = () => {
           </div>
           <div className='mt-2 text-sm text-gray-500'>
             <p>Payment Status: {item.isPaymentDone ? 'Paid' : 'Not Paid'}</p>
-            <p>Item ID: {item.id}</p>
-            <p>User ID: {item.userId}</p>
           </div>
         </div>
         <button

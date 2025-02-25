@@ -158,6 +158,7 @@ const Bookings = () => {
   };
 
   const BookingCard = ({ booking }) => (
+    booking.status=='Complete'?null:
     <motion.div
       layout
       initial={{ opacity: 0, y: 50 }}
