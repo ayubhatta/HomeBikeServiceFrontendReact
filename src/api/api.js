@@ -183,3 +183,27 @@ export const sendFeedbackApi = (data) =>
   Api.post('/api/feedback/postFeedback', data, config);
 
 export const getFeedbackApi = () => Api.get('/api/feedback/all', config);
+// =================== Payment ======================
+export const initializeKhaltiPaymentApi = (data) =>
+  Api.post('/api/payment/initialize_khalti', data, jsonConfig);
+
+// ===================== Mechanic API ========================
+export const getAllMechanicsApi = () => Api.get('/api/mechanic/all', config);
+
+export const createMechanicApi = (data) =>
+  FileApi.post('/api/mechanic/create', data, config);
+
+export const updateMechanicApi = (id, data) =>
+  FileApi.put(`/api/mechanic/update/${id}`, data, config);
+
+export const deleteMechanicApi = (id) =>
+  Api.delete(`/api/mechanic/delete/${id}`, config);
+
+export const getMechanicByIdApi = (id) =>
+  Api.get(`/api/mechanic/${id}`, config);
+
+export const getAssignedBookingMechanicApi = (id) =>
+  Api.get(`/api/mechanic/assigned/${id}`, config);
+
+export const assignMechamnicToBookingApi = (id) =>
+  Api.put(`/api/mechanic/${id}`, config);
