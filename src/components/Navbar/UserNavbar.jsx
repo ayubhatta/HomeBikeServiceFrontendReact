@@ -31,7 +31,7 @@ const UserNavbar = () => {
             <Link
               to='/homepage'
               className='flex items-center space-x-3 text-white hover:text-gray-200 transition duration-300'>
-              <span className='text-2xl font-bold'>Home Bike Service</span>
+              <span className='text-2xl font-bold'>Ride Revive</span>
             </Link>
 
             <div className='hidden md:flex items-center space-x-8'>

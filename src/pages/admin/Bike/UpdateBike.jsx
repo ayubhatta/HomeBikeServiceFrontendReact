@@ -19,7 +19,7 @@ const UpdateBike = () => {
         setBikeName(res.data.bike.bikeName);
         setBikeModel(res.data.bike.bikeModel);
         setBikePrice(res.data.bike.bikePrice);
-        setOldImage(res.data.bike.bikeImage);
+        setOldImage(res.data.bike.bikeImageUrl);
       })
       .catch((err) => {
         console.log(err);
@@ -36,14 +36,14 @@ const UpdateBike = () => {
     e.preventDefault();
     console.log(bikeImage);
     const formData = new FormData();
-    formData.append('bikeName', bikeName);
-    formData.append('bikeModel', bikeModel);
-    formData.append('bikePrice', bikePrice);
-    formData.append('bikeImage', bikeImage || oldImage);
+    formData.append('BikeName', bikeName);
+    formData.append('BikeModel', bikeModel);
+    formData.append('BikePrice', bikePrice);
+    formData.append('BikeImage', bikeImage || oldImage);
 
     updateBikeApi(id, formData)
       .then((res) => {
-        if (res.status === 201) {
+        if (res.status === 200) {
           toast.success(res.data.message);
           window.location.replace('/admin/dashboard/bike');
         }
@@ -141,7 +141,7 @@ const UpdateBike = () => {
                 />
               ) : (
                 <img
-                  src={`http://localhost:5000/bikes/${oldImage}`}
+                  src={oldImage}
                   className='object-cover rounded-lg w-full h-96'
                   alt='Old Bike'
                 />

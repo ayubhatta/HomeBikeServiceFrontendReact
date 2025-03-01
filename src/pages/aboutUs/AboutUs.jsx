@@ -9,7 +9,7 @@ const AboutUs = () => {
             <div className='relative'>
               <img
                 src='https://i.imgur.com/WbQnbas.png'
-                alt='Home Bike Service'
+                alt='Ride Revive'
                 className='rounded-lg shadow-2xl'
               />
               <div className='absolute -bottom-10 -right-10 bg-indigo-600 text-white py-4 px-8 rounded-lg shadow-xl'>
@@ -20,10 +20,10 @@ const AboutUs = () => {
           </div>
           <div className='lg:w-1/2 lg:pl-16'>
             <h2 className='text-4xl font-extrabold text-gray-900 mb-6'>
-              About <span className='text-indigo-600'>Home Bike Service</span>
+              About <span className='text-indigo-600'>Ride Revive</span>
             </h2>
             <p className='text-xl text-gray-700 mb-8 leading-relaxed'>
-              Home bike service offers the convenience of professional bicycle
+              Ride Revive offers the convenience of professional motorcycle
               maintenance and repair at your doorstep. Our expert technicians
               bring years of experience right to your home, ensuring your bike
               stays in peak condition.

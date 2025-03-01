@@ -83,7 +83,7 @@ export const deleteBikeApi = (id) =>
 
 // update bike api
 export const updateBikeApi = (id, data) =>
-  Api.put(`api/bike/update_bike/${id}`, data, config);
+  FileApi.put(`api/bikeProducts/${id}`, data, config);
 
 // pagination
 export const paginationApi = (page, limit) =>

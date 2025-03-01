@@ -45,9 +45,11 @@ const BikePartsDashboard = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    setBikeData((prev) => ({ ...prev, partImage: file }));
-    setPreviewImage(URL.createObjectURL(file));
-    setErrors((prev) => ({ ...prev, partImage: '' }));
+    if (file) {
+      setBikeData((prev) => ({ ...prev, partImage: file }));
+      setPreviewImage(URL.createObjectURL(file));
+      setErrors((prev) => ({ ...prev, partImage: '' }));
+    }
   };
 
   const validate = () => {
@@ -57,8 +59,8 @@ const BikePartsDashboard = () => {
     if (!bikePartData.description.trim())
       newErrors.description = 'Bike Part Description is required';
     if (!bikePartData.quantity.trim())
-      newErrors.description = 'Bike Part Quantity is required';
-    if (!bikePartData.quantity.trim())
+      newErrors.quantity = 'Bike Part Quantity is required';
+    if (!bikePartData.price.trim())
       newErrors.price = 'Bike Part Price is required';
     if (!bikePartData.partImage)
       newErrors.partImage = 'Bike Part Image is required';
@@ -67,25 +69,21 @@ const BikePartsDashboard = () => {
   };
 
   const handleSubmit = (e) => {
-    // e.preventDefault();
-    // if (!validate()) return;
-    console.log('bikePartData', bikePartData);
-
+    e.preventDefault();
+    if (!validate()) return;
+    
     const formData = new FormData();
     Object.entries(bikePartData).forEach(([key, value]) =>
       formData.append(key, value)
     );
-    console.log('formData', formData);
 
     createBikePartsApi(formData)
       .then((res) => {
-        console.log('bikePartData', bikePartData);
-
         if (res.status === 201) {
           toast.success(res.data.message);
-          // setIsModalOpen(false);
-          // fetchBikeParts();
-          // resetForm();
+          setIsModalOpen(false);
+          fetchBikeParts();
+          resetForm();
         }
       })
       .catch((err) => {
@@ -114,13 +112,22 @@ const BikePartsDashboard = () => {
 
   const resetForm = () => {
     setBikeData({
-      bikePartName: '',
-      bikePartModel: '',
-      bikePartPrice: '',
+      partName: '',
+      description: '',
+      price: '',
+      quantity: '',
       partImage: null,
     });
     setPreviewImage(null);
     setErrors({});
+  };
+
+  // Handle click outside modal to close
+  const handleClickOutside = (e) => {
+    if (e.target.classList.contains('modal-overlay')) {
+      setIsModalOpen(false);
+      resetForm();
+    }
   };
 
   return (
@@ -161,9 +168,7 @@ const BikePartsDashboard = () => {
                 <td className='py-3 px-4'>{bikePart.partName}</td>
                 <td className='py-3 px-4'>{bikePart.description}</td>
                 <td className='py-3 px-4'>{bikePart.price}</td>
-
                 <td className='py-3 px-4'>{bikePart.quantity}</td>
-
                 <td className='py-3 px-4'>
                   <Link
                     to={`/admin/updatebikePart/${bikePart._id}`}
@@ -184,9 +189,12 @@ const BikePartsDashboard = () => {
       </div>
 
       {isModalOpen && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-          <div className='bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md'>
-            <h2 className='text-2xl font-semibold mb-6'>Add New Bike Parts</h2>
+        <div 
+          className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 modal-overlay'
+          onClick={handleClickOutside}
+        >
+          <div className='bg-gray-800 p-4 sm:p-6 md:p-8 rounded-lg shadow-xl w-full max-w-xs sm:max-w-sm md:max-w-md mx-4 overflow-y-auto max-h-screen'>
+            <h2 className='text-xl sm:text-2xl font-semibold mb-4 sm:mb-6'>Add New Bike Parts</h2>
             <form
               onSubmit={handleSubmit}
               className='space-y-4'>
@@ -215,15 +223,28 @@ const BikePartsDashboard = () => {
                 <label className='block text-gray-300 mb-1'>Image</label>
                 <input
                   type='file'
+                  accept="image/*"
                   onChange={handleImageChange}
                   className='w-full p-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500'
                 />
                 {previewImage && (
-                  <img
-                    src={previewImage}
-                    alt='Preview'
-                    className='mt-2 rounded max-w-full h-auto'
-                  />
+                  <div className="mt-2 relative">
+                    <img
+                      src={previewImage}
+                      alt='Preview'
+                      className='rounded max-w-full h-auto object-contain max-h-48'
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPreviewImage(null);
+                        setBikeData((prev) => ({ ...prev, partImage: null }));
+                      }}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                    >
+                      ×
+                    </button>
+                  </div>
                 )}
                 {errors.partImage && (
                   <p className='text-red-500 text-sm mt-1'>
@@ -244,7 +265,7 @@ const BikePartsDashboard = () => {
                 <button
                   type='submit'
                   className='bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300'>
-                  Add Bike Part Parts
+                  Add Bike Part
                 </button>
               </div>
             </form>

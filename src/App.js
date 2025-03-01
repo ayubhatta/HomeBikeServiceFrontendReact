@@ -29,6 +29,9 @@ import UpdateProfile from './pages/updateProfile/UpdateProfile';
 import AdminRoutes from './protected/Admin/AdminRoutes';
 import UserRoutes from './protected/User/UserRoutes';
 
+const user = JSON.parse(localStorage.getItem('user'));
+
+
 function App() {
   return (
     <Router>
@@ -37,7 +40,7 @@ function App() {
       <Routes>
       <Route
           path='/'
-          element={<Homepage />}
+          element={user?.isAdmin ? <Dashboard />:<Homepage />}
         />
         <Route
           path='/register'

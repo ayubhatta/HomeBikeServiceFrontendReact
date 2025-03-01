@@ -48,7 +48,7 @@ const Sidebar = ({ isOpen, toggleSidebar, menuItems, handleLogout }) => {
         className='sidebar w-64 bg-gray-900 text-white fixed inset-y-0 left-0 z-40 overflow-y-auto lg:translate-x-0'>
         <div className='flex items-center justify-between p-4 border-b border-gray-700'>
           <h1 className='text-2xl font-bold text-indigo-400'>
-            Home Bike Service
+            Ride Revive
           </h1>
           <button
             onClick={toggleSidebar}

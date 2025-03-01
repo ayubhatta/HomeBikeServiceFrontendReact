@@ -73,7 +73,7 @@ const AdminNavbar = () => {
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } transition-transform duration-300 ease-in-out lg:translate-x-0 overflow-y-auto`}>
         <div className='flex items-center justify-between mb-8'>
-          <div className='text-2xl font-bold'>Home Bike Service</div>
+          <div className='text-2xl font-bold'>Ride Revive</div>
           <button
             onClick={toggleSidebar}
             className='lg:hidden text-white focus:outline-none'

@@ -57,7 +57,7 @@ const Footer = () => {
         <div className='tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-8'>
           <div>
             <h2 className='tw-text-3xl tw-font-bold tw-text-white tw-mb-4'>
-              Home Bike Service
+              Ride Revive
             </h2>
             <p className='tw-text-gray-400 tw-mb-4'>
               Professional bike maintenance and repair at your doorstep.
@@ -110,7 +110,7 @@ const Footer = () => {
       <div className='tw-bg-blue-900 tw-py-4'>
         <div className='tw-container tw-mx-auto tw-px-4 tw-text-center'>
           <p className='tw-text-gray-400'>
-            &copy; {new Date().getFullYear()} Home Bike Service. All rights
+            &copy; {new Date().getFullYear()} Ride Revive. All rights
             reserved.
           </p>
         </div>

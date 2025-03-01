@@ -42,7 +42,6 @@ const Login = () => {
     if (!validate()) return;
 
     const data = { email, password };
-    console.log(data);
     loginUserApi(data)
       .then((res) => {
         if (res.data.message == 'Login successful!') {
@@ -95,7 +94,7 @@ const Login = () => {
         <div>
           <FaMotorcycle className='mx-auto h-12 w-auto text-indigo-600' />
           <h2 className='mt-6 text-center text-3xl font-extrabold text-gray-900'>
-            Welcome to Home Bike Service
+            Welcome to Ride Revive
           </h2>
           <p className='mt-2 text-center text-sm text-gray-600'>
             Your one-stop solution for bike home servicing

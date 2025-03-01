@@ -64,7 +64,7 @@ const Homepage = () => {
             <div className='tw-w-full md:tw-w-1/2'>
               <motion.img
                 src='assets/images/home.png'
-                alt='Home Bike Service'
+                alt='Ride Revive'
                 className='tw-w-full tw-rounded-lg tw-shadow-lg'
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -82,16 +82,16 @@ const Homepage = () => {
             <div className='tw-w-full md:tw-w-1/2 tw-mb-8 md:tw-mb-0'>
               <img
                 src='assets/images/logo.png'
-                alt='Home Bike Service Logo'
+                alt='Ride Revive Logo'
                 className='tw-w-full tw-max-w-md tw-mx-auto'
               />
             </div>
             <div className='tw-w-full md:tw-w-1/2'>
               <h2 className='tw-text-3xl tw-font-bold tw-mb-4 tw-text-blue-600'>
-                About Home Bike Service
+                About Ride Revive
               </h2>
               <p className='tw-text-gray-700 tw-mb-4'>
-                Home bike service offers the convenience of professional bicycle
+                Ride Revive offers the convenience of professional bicycle
                 maintenance and repair at your doorstep. This service typically
                 includes basic tune-ups, such as brake and gear adjustments,
                 chain lubrication, and tire inflation, ensuring your bike

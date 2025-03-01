@@ -63,7 +63,10 @@ const Bookings = () => {
   }, []);
 
   const calculateTotal = () => {
-    return bookings
+    // if (booking.status=='Complete'){
+    //   return 0;
+    // }
+      return bookings
       .reduce(
         (total, booking) =>
           total + (booking.total || booking.bikeDetails.bikePrice),
@@ -150,11 +153,6 @@ const Bookings = () => {
     date.setHours(parseInt(hours, 10));
     date.setMinutes(parseInt(minutes, 10));
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const getImageUrl = (bikeId) => {
-    // You may need to adjust this based on your API structure
-    return `http://localhost:5000/bikes/bike-${bikeId}.jpg`;
   };
 
   const BookingCard = ({ booking }) => (

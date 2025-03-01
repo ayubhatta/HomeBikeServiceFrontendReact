@@ -40,9 +40,11 @@ const BikeDashboard = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    setBikeData((prev) => ({ ...prev, bikeImage: file }));
-    setPreviewImage(URL.createObjectURL(file));
-    setErrors((prev) => ({ ...prev, bikeImage: '' }));
+    if (file) {
+      setBikeData((prev) => ({ ...prev, bikeImage: file }));
+      setPreviewImage(URL.createObjectURL(file));
+      setErrors((prev) => ({ ...prev, bikeImage: '' }));
+    }
   };
 
   const validate = () => {
@@ -138,7 +140,7 @@ const BikeDashboard = () => {
                 className='border-t border-gray-700 hover:bg-gray-750 transition duration-200'>
                 <td className='py-3 px-4'>
                   <img
-                    src={`https://192.168.1.81:7080/images/${bike.bikeImage}`}
+                    src={bike.bikeImageUrl}
                     alt={bike.bikeName}
                     className='w-16 h-16 object-cover rounded'
                   />
@@ -147,14 +149,14 @@ const BikeDashboard = () => {
                 <td className='py-3 px-4'>{bike.bikeModel}</td>
                 <td className='py-3 px-4'>
                   <Link
-                    to={`/admin/updatebike/${bike._id}`}
+                    to={`/admin/updatebike/${bike.id}`}
                     className='bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600 mr-2 transition duration-300'>
                     Edit
                   </Link>
                   <button
                     type='button'
                     className='bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition duration-300'
-                    onClick={() => handleDelete(bike._id)}>
+                    onClick={() => handleDelete(bike.id)}>
                     Delete
                   </button>
                 </td>
@@ -165,8 +167,8 @@ const BikeDashboard = () => {
       </div>
 
       {isModalOpen && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-          <div className='bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md'>
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
+          <div className='bg-gray-800 p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md overflow-auto max-h-[90vh]'>
             <h2 className='text-2xl font-semibold mb-6'>Add New Bike</h2>
             <form
               onSubmit={handleSubmit}
@@ -192,20 +194,35 @@ const BikeDashboard = () => {
                 <label className='block text-gray-300 mb-1'>Image</label>
                 <input
                   type='file'
+                  accept="image/*"
                   onChange={handleImageChange}
                   className='w-full p-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500'
                 />
-                {previewImage && (
-                  <img
-                    src={previewImage}
-                    alt='Preview'
-                    className='mt-2 rounded max-w-full h-auto'
-                  />
-                )}
                 {errors.bikeImage && (
                   <p className='text-red-500 text-sm mt-1'>
                     {errors.bikeImage}
                   </p>
+                )}
+                {previewImage && (
+                  <div className="mt-3 relative">
+                    <div className="relative w-full aspect-video bg-gray-700 rounded overflow-hidden flex items-center justify-center">
+                      <img
+                        src={previewImage}
+                        alt="Preview"
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPreviewImage(null);
+                        setBikeData(prev => ({ ...prev, bikeImage: null }));
+                      }}
+                      className="absolute top-2 right-2 bg-red-500 rounded-full w-6 h-6 flex items-center justify-center text-white hover:bg-red-600"
+                    >
+                      ×
+                    </button>
+                  </div>
                 )}
               </div>
               <div className='flex justify-end space-x-2 mt-6'>
