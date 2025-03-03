@@ -26,13 +26,17 @@ const AdminBookings = () => {
     getAllBookingApi()
       .then((res) => {
         if (res.status === 200) {
-          setBookings(res.data.bookings);
+          // Make sure we're setting an array, even if the API returns null or undefined
+          setBookings(Array.isArray(res.data?.bookings) ? res.data.bookings : []);
+        } else {
+          setBookings([]);
         }
         setLoading(false);
       })
       .catch((err) => {
         console.log(err);
         toast.error('Failed to load bookings. Please try again.');
+        setBookings([]);
         setLoading(false);
       });
   }, []);
@@ -43,19 +47,24 @@ const AdminBookings = () => {
   };
 
   const sortedBookings = useMemo(() => {
+    if (!Array.isArray(bookings)) {
+      console.error('bookings is not an array:', bookings);
+      return [];
+    }
+    
     let sortableItems = [...bookings];
     if (sortConfig.key) {
       sortableItems.sort((a, b) => {
         let aValue, bValue;
         if (sortConfig.key === 'customerName') {
-          aValue = a.userDetails.fullName;
-          bValue = b.userDetails.fullName;
+          aValue = a.userDetails?.fullName || '';
+          bValue = b.userDetails?.fullName || '';
         } else if (sortConfig.key === 'status') {
-          aValue = a.status;
-          bValue = b.status;
+          aValue = a.status || '';
+          bValue = b.status || '';
         } else {
-          aValue = new Date(a[sortConfig.key]);
-          bValue = new Date(b[sortConfig.key]);
+          aValue = new Date(a[sortConfig.key] || null);
+          bValue = new Date(b[sortConfig.key] || null);
         }
         if (aValue < bValue) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -79,13 +88,13 @@ const AdminBookings = () => {
 
   const filteredBookings = sortedBookings.filter(
     (booking) =>
-      booking.userDetails.fullName
-        .toLowerCase()
+      booking.userDetails?.fullName
+        ?.toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
       (booking.bikeDetails?.bikeName || '')
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      booking.bikeNumber.toLowerCase().includes(searchTerm.toLowerCase())
+      (booking.bikeNumber || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -162,31 +171,31 @@ const AdminBookings = () => {
               className='tw-bg-gray-800 tw-rounded-lg tw-shadow-lg tw-overflow-hidden tw-transition-transform tw-duration-300 hover:tw-transform hover:tw-scale-105'>
               <div className='tw-p-6'>
                 <h2 className='tw-text-2xl tw-font-semibold tw-mb-4'>
-                  {booking.userDetails.fullName}
+                  {booking.userDetails?.fullName || 'Unknown User'}
                 </h2>
                 <div className='tw-flex tw-items-center tw-mb-2'>
                   <FaMotorcycle className='tw-mr-2 tw-text-blue-500' />
                   <p>
                     {booking.bikeDetails?.bikeName || 'Unknown Bike'}{' '}
                     {booking.bikeDetails?.bikeModel || ''} -{' '}
-                    {booking.bikeNumber}
+                    {booking.bikeNumber || 'No Number'}
                   </p>
                 </div>
                 <div className='tw-flex tw-items-center tw-mb-2'>
                   <FaPhoneAlt className='tw-mr-2 tw-text-green-500' />
-                  <p>{booking.userDetails.phoneNumber}</p>
+                  <p>{booking.userDetails?.phoneNumber || 'No Phone'}</p>
                 </div>
                 <div className='tw-flex tw-items-center tw-mb-2'>
                   <FaMapMarkerAlt className='tw-mr-2 tw-text-red-500' />
-                  <p>{booking.bookingAddress}</p>
+                  <p>{booking.bookingAddress || 'No Address'}</p>
                 </div>
                 <div className='tw-flex tw-items-center tw-mb-2'>
                   <FaCalendarAlt className='tw-mr-2 tw-text-yellow-500' />
-                  <p>{formatDate(booking.bookingDate)}</p>
+                  <p>{booking.bookingDate ? formatDate(booking.bookingDate) : 'No Date'}</p>
                 </div>
                 <div className='tw-flex tw-items-center tw-mb-4'>
                   <FaClock className='tw-mr-2 tw-text-purple-500' />
-                  <p>{booking.bookingTime}</p>
+                  <p>{booking.bookingTime || 'No Time'}</p>
                 </div>
                 <div className='tw-flex tw-justify-between tw-items-center'>
                   <span
@@ -195,7 +204,7 @@ const AdminBookings = () => {
                         ? 'tw-bg-green-500'
                         : 'tw-bg-yellow-500'
                     }`}>
-                    {booking.status}
+                    {booking.status || 'Unknown'}
                   </span>
                   <button className='tw-bg-blue-500 hover:tw-bg-blue-600 tw-text-white tw-font-bold tw-py-2 tw-px-4 tw-rounded tw-transition-colors tw-duration-300'>
                     Details
