@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { FaStar } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import { getFeedbackApi } from './../../../api/api';
+import { getFeedbackApi } from '../../../api/api';
 
 const StarRating = ({ rating }) => (
   <div className='flex'>
