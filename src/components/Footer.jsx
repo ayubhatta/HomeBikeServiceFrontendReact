@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 const Footer = () => {
   const user = JSON.parse(localStorage.getItem('user'));
 
-  if (!user || user.isAdmin) return null;
+  if (!user || user.isAdmin || user.role === 'Mechanic') return null;
 
   const footerSections = [
     {
@@ -110,8 +110,7 @@ const Footer = () => {
       <div className='tw-bg-blue-900 tw-py-4'>
         <div className='tw-container tw-mx-auto tw-px-4 tw-text-center'>
           <p className='tw-text-gray-400'>
-            &copy; {new Date().getFullYear()} Ride Revive. All rights
-            reserved.
+            &copy; {new Date().getFullYear()} Ride Revive. All rights reserved.
           </p>
         </div>
       </div>

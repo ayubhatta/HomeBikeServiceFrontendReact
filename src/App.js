@@ -12,6 +12,7 @@ import BikePartsDashboard from './pages/admin/bikeParts/BikeParts';
 import AdminBookings from './pages/admin/bookings/AdminBookings';
 import CustomerDashboard from './pages/admin/costumer/CustomerDashboard';
 import Feedback from './pages/admin/feedback/Feedback';
+import MechanicList from './pages/admin/mechanic/MechanicList';
 import BookNow from './pages/bookNow/BookNow';
 import Bookings from './pages/bookings/Bookings';
 import Cart from './pages/cart/Cart';
@@ -22,15 +23,16 @@ import ContactUs from './pages/contactUs/ContactUs';
 import Homepage from './pages/dashboard/Homepage';
 import Login from './pages/login/login';
 import Marketplace from './pages/marketplace/Marketplace';
+import MechanicDashboard from './pages/mechanic/MechanicDashboard/MechanicDashboard';
 import Register from './pages/register/register';
 import Search from './pages/search/Search';
 import ThankYouPage from './pages/thankyouForBooking/ThankyouPage';
 import UpdateProfile from './pages/updateProfile/UpdateProfile';
 import AdminRoutes from './protected/Admin/AdminRoutes';
+import MechanicRoutes from './protected/Mechanic/MechanicRoutes';
 import UserRoutes from './protected/User/UserRoutes';
 
 const user = JSON.parse(localStorage.getItem('user'));
-
 
 function App() {
   return (
@@ -38,9 +40,9 @@ function App() {
       <Navbar />
       <ToastContainer />
       <Routes>
-      <Route
+        <Route
           path='/'
-          element={user?.isAdmin ? <Dashboard />:<Homepage />}
+          element={user?.isAdmin ? <Dashboard /> : <Homepage />}
         />
         <Route
           path='/register'
@@ -133,6 +135,10 @@ function App() {
             element={<CustomerDashboard />}
           />
           <Route
+            path='/admin/mechanic'
+            element={<MechanicList />}
+          />
+          <Route
             path='/admin/barchart'
             element={<BarChat />}
           />
@@ -147,6 +153,13 @@ function App() {
           />
         </Route>
         {/* =========================== END ADMIN ROUTE ============================ */}
+        {/* =========================== Mechanic ROUTE ============================ */}
+        <Route element={<MechanicRoutes />}>
+          <Route
+            path='/mechanic'
+            element={<MechanicDashboard />}
+          />
+        </Route>
       </Routes>
       <Footer />
     </Router>

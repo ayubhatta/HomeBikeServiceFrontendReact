@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { FaStar } from 'react-icons/fa';
-import { toast } from 'react-toastify';
 import { getFeedbackApi } from '../../../api/api';
 
 const StarRating = ({ rating }) => (
@@ -53,9 +52,9 @@ const Feedback = () => {
         throw new Error('Invalid data received from the server');
       }
     } catch (err) {
-      console.error('Error fetching feedbacks:', err);
-      setError('Failed to load feedbacks. Please try again.');
-      toast.error('Failed to load feedbacks. Please try again.');
+      console.error('Error fetching feedbacks:', err.response.data.message);
+      setError(err.response.data.message);
+      // toast.error(err.response.data.message);
     } finally {
       setLoading(false);
     }

@@ -188,7 +188,7 @@ export const initializeKhaltiPaymentApi = (data) =>
   Api.post('/api/payment/initialize_khalti', data, jsonConfig);
 
 // ===================== Mechanic API ========================
-export const getAllMechanicsApi = () => Api.get('/api/mechanic/all', config);
+export const getAllMechanicsApi = () => Api.get('/api/mechanics', config);
 
 export const createMechanicApi = (data) =>
   FileApi.post('/api/mechanic/create', data, config);

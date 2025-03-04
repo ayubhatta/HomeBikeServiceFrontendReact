@@ -1,51 +1,35 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { FaEllipsisH, FaEnvelope, FaPhone, FaUserCircle } from 'react-icons/fa';
-import { toast } from 'react-toastify';
-import { getAllUsersApi, updateRoleToMechanicApi } from '../../../api/api';
+import { FaEnvelope, FaPhone, FaUserCircle } from 'react-icons/fa';
+import { getAllMechanicsApi } from '../../../api/api';
 
-const CustomerDashboard = () => {
-  const [users, setUsers] = useState([]);
+const MechanicList = () => {
+  const [users, setMechanics] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchUsers = useCallback(() => {
+  const fetchMechanics = useCallback(() => {
     setLoading(true);
-    getAllUsersApi()
+    getAllMechanicsApi()
       .then((res) => {
         if (res.status === 200) {
           console.log(res.data);
-          setUsers(res.data);
+          setMechanics(res.data);
         }
         setLoading(false);
       })
       .catch((err) => {
         console.error('Error fetching users:', err);
-        setError('No User Found');
+        setError('No Mechanic Found');
         setLoading(false);
       });
   }, []);
-  // Function to update user role to Mechanic
-  const handleRoleUpdate = (id) => {
-    console.log('Updating user role to Mechanic:', id);
-    updateRoleToMechanicApi(id)
-      .then((res) => {
-        if (res.status === 200) {
-          toast.success('User role updated successfully!');
-          fetchUsers(); // Refresh the user list
-        }
-      })
-      .catch((err) => {
-        console.error('Error updating user role:', err);
-        toast.error('Failed to update user role. Please try again.');
-      });
-  };
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    fetchMechanics();
+  }, [fetchMechanics]);
 
-  const filteredUsers = users.filter(
+  const filteredMechanics = users.filter(
     (user) =>
       user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -56,7 +40,7 @@ const CustomerDashboard = () => {
     <div className='tw-ml-0 lg:tw-ml-64 min-h-screen bg-gray-900 text-white tw-relative'>
       <div className='bg-gray-800 p-6 rounded-lg shadow-md'>
         <div className='mb-6 flex justify-between items-center'>
-          <h1 className='text-3xl font-bold'>User Dashboard</h1>
+          <h1 className='text-3xl font-bold'>Mechanic Dashboard</h1>
           <div className='relative'>
             <input
               type='text'
@@ -81,14 +65,13 @@ const CustomerDashboard = () => {
               <thead className='bg-gray-600'>
                 <tr>
                   <th className='py-3 px-4 text-left'>No</th>
-                  <th className='py-3 px-4 text-left'>User Name</th>
-                  <th className='py-3 px-4 text-left'>User Email</th>
-                  <th className='py-3 px-4 text-left'>User Phone</th>
-                  <th className='py-3 px-4 text-left'>Actions</th>
+                  <th className='py-3 px-4 text-left'>Mechanic Name</th>
+                  <th className='py-3 px-4 text-left'>Mechanic Email</th>
+                  <th className='py-3 px-4 text-left'>Mechanic Phone</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((user, index) => (
+                {filteredMechanics.map((user, index) => (
                   <tr
                     key={user.userId}
                     className='border-t border-gray-600 hover:bg-gray-650 transition duration-150 ease-in-out'>
@@ -109,14 +92,6 @@ const CustomerDashboard = () => {
                         {user.phoneNumber}
                       </div>
                     </td>
-                    <td className='py-3 px-4'>
-                      <button
-                        className='flex items-center'
-                        onClick={() => handleRoleUpdate(user.id)}>
-                        <FaEllipsisH className='mr-2 text-green-400' />
-                        Change To Mechanic
-                      </button>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -124,7 +99,7 @@ const CustomerDashboard = () => {
           </div>
         )}
 
-        {!loading && !error && filteredUsers.length === 0 && (
+        {!loading && !error && filteredMechanics.length === 0 && (
           <div className='text-center py-10 text-gray-400'>
             No users found matching your search criteria.
           </div>
@@ -134,4 +109,4 @@ const CustomerDashboard = () => {
   );
 };
 
-export default CustomerDashboard;
+export default MechanicList;
