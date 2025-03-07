@@ -1,38 +1,53 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Logo } from './Logo/Logo'; // Ensure correct path
 
-const MyCard = ({ bikeInformation, color }) => {
+const MyCard = ({ bike }) => {
+  // Safety check to prevent the error
+  if (!bike) {
+    return (
+      <div className='rounded-lg bg-gray-100 p-4 shadow-md'>
+        <p className='text-gray-500'>Bike information unavailable</p>
+      </div>
+    );
+  }
+
+  // Destructure with fallback values to prevent undefined errors
+  const {
+    bikeName = 'Unknown Bike',
+    bikeModel = 'Unknown Model',
+    bikePrice = 0,
+    bikeImageUrl = '/api/placeholder/400/300',
+  } = bike;
+
+  // Find the corresponding logo based on bikeName
+  const bikeLogo =
+    Logo.find((item) => item.name === bikeName)?.logo ||
+    '/assets/images/default-logo.png';
+
   return (
-    <div
-      class='card'
-      style={{ width: '18rem' }}>
-      <span
-        style={{
-          backgroundColor: color,
-        }}
-        className='badge position-absolute top-0'>
-        {bikeInformation.bikeName}
-      </span>
+    <div className='overflow-hidden rounded-lg bg-white shadow-lg transition duration-300 hover:shadow-xl'>
+      <div className='relative h-48 w-full overflow-hidden'>
+        <img
+          src={bikeLogo}
+          alt={bikeName}
+          className='h-full w-full object-contain transition duration-300 hover:scale-110'
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = '/api/placeholder/400/300';
+          }}
+        />
+      </div>
 
-      <img
-        src={`${bikeInformation.bikeImageUrl}`}
-        class='card-img-top'
-        alt={bikeInformation.bikeName}
-        style={{
-          width: '100%',
-          height: '300px',
-          objectFit: 'cover',
-        }}
-      />
-      <div class='card-body'>
-        <div className='d-flex justify-content-between'>
-          <h5 class='card-title'>{bikeInformation.bikeName}</h5>
+      <div className='p-4'>
+        <h3 className='mb-1 text-lg font-bold text-gray-800'>{bikeName}</h3>
+
+        <div className='mt-2 flex items-center justify-between'>
+          <button
+            onClick={() => (window.location.href = `/bike/${bikeName}`)}
+            className='rounded-md w-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-indigo-700'>
+            Book Now
+          </button>
         </div>
-        <Link
-          to={`/bike/${bikeInformation.bikeName}`}
-          class='btn btn-outline-dark w-100'>
-          {bikeInformation.bikeName}
-        </Link>
       </div>
     </div>
   );

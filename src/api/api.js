@@ -180,7 +180,7 @@ export const sendNotificationApi = (data) =>
 // ================================ Feedback API ==============================
 
 export const sendFeedbackApi = (data) =>
-  Api.post('/api/feedback/postFeedback', data, config);
+  Api.post('/api/feedback/add', data, config);
 
 export const getFeedbackApi = () => Api.get('/api/feedback/all', config);
 // =================== Payment ======================

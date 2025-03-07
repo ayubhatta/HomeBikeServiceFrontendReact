@@ -8,9 +8,12 @@ import {
   CardActions,
   CardContent,
   CardMedia,
+  Checkbox,
   Chip,
   Divider,
   FormControl,
+  FormControlLabel,
+  FormGroup,
   Grid,
   InputAdornment,
   MenuItem,
@@ -30,6 +33,8 @@ const Marketplace = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [priceRange, setPriceRange] = useState([0, 2000]);
+  const [bikeFilters, setBikeFilters] = useState([]);
+  const [selectedBikes, setSelectedBikes] = useState({});
 
   const [sortBy, setSortBy] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,11 +47,49 @@ const Marketplace = () => {
       setLoading(true);
       try {
         const response = await getAllBikePartsApi();
-        const bikeParts = response.data.bikeParts;
-        setProducts(bikeParts);
+
+        // Extract all parts from the grouped data and prevent duplicates
+        const allParts = [];
+        const bikesSet = new Set();
+        const uniquePartIds = new Set();
+
+        response.data.data.forEach((bikeGroup) => {
+          bikesSet.add(bikeGroup.bikeName);
+
+          bikeGroup.parts.forEach((part) => {
+            // Only add the part if we haven't seen this ID before
+            if (!uniquePartIds.has(part.id)) {
+              uniquePartIds.add(part.id);
+
+              // Add bike compatibility information to each part
+              allParts.push({
+                ...part,
+                partImage: part.partImageUrl, // Map the image URL to match your existing code
+                category: bikeGroup.bikeName, // Using bike name as category for now
+                inStock: part.quantity > 0,
+              });
+            }
+          });
+        });
+
+        setProducts(allParts);
+
+        // Set up bike filters and initialize selectedBikes object
+        const bikes = [...bikesSet];
+        setBikeFilters(bikes);
+
+        // Initialize selectedBikes with all bikes set to false
+        const initialSelectedBikes = {};
+        bikes.forEach((bike) => {
+          initialSelectedBikes[bike] = false;
+        });
+        setSelectedBikes(initialSelectedBikes);
 
         // Find max price for slider
-        const maxPrice = Math.max(...bikeParts.map((product) => product.price));
+        const maxPrice = Math.max(
+          ...allParts.map((product) => product.price),
+          2000
+        );
         setPriceRange([0, maxPrice]);
 
         setLoading(false);
@@ -80,6 +123,22 @@ const Marketplace = () => {
           product.price >= priceRange[0] && product.price <= priceRange[1]
       );
 
+      // Apply bike filter - check if any bikes are selected
+      const selectedBikesList = Object.keys(selectedBikes).filter(
+        (bike) => selectedBikes[bike]
+      );
+
+      if (selectedBikesList.length > 0) {
+        result = result.filter((product) => {
+          return (
+            product.compatibleBikes &&
+            selectedBikesList.some((bike) =>
+              product.compatibleBikes.includes(bike)
+            )
+          );
+        });
+      }
+
       // Apply sorting
       if (sortBy) {
         switch (sortBy) {
@@ -89,7 +148,6 @@ const Marketplace = () => {
           case 'price_desc':
             result.sort((a, b) => b.price - a.price);
             break;
-
           default:
             break;
         }
@@ -99,7 +157,14 @@ const Marketplace = () => {
     };
 
     applyFilters();
-  }, [products, searchQuery, priceRange, sortBy]);
+  }, [products, searchQuery, priceRange, sortBy, selectedBikes]);
+
+  const handleBikeCheckboxChange = (event) => {
+    setSelectedBikes({
+      ...selectedBikes,
+      [event.target.name]: event.target.checked,
+    });
+  };
 
   const handleAddToCart = async (product) => {
     try {
@@ -123,8 +188,26 @@ const Marketplace = () => {
 
   const handleClearFilters = () => {
     setSearchQuery('');
-    setPriceRange([0, Math.max(...products.map((product) => product.price))]);
+    // Reset all bike checkboxes
+    const resetBikes = {};
+    Object.keys(selectedBikes).forEach((bike) => {
+      resetBikes[bike] = false;
+    });
+    setSelectedBikes(resetBikes);
+    setPriceRange([
+      0,
+      Math.max(...products.map((product) => product.price), 2000),
+    ]);
     setSortBy('');
+  };
+
+  // Check if any filters are applied
+  const isAnyFilterApplied = () => {
+    return (
+      searchQuery !== '' ||
+      sortBy !== '' ||
+      Object.values(selectedBikes).some((value) => value === true)
+    );
   };
 
   // Loading skeletons for products
@@ -227,13 +310,10 @@ const Marketplace = () => {
                 <Button
                   size='small'
                   onClick={handleClearFilters}
-                  disabled={!searchQuery && sortBy === ''}>
+                  disabled={!isAnyFilterApplied()}>
                   Clear All
                 </Button>
               </Box>
-
-              <Divider sx={{ my: 2 }} />
-
               <Typography
                 variant='subtitle2'
                 gutterBottom>
@@ -261,6 +341,35 @@ const Marketplace = () => {
                 <Typography variant='body2'>Rs.{priceRange[1]}</Typography>
               </Box>
 
+              <Divider sx={{ my: 2 }} />
+
+              {/* Bike Checkboxes */}
+              <Typography
+                variant='subtitle2'
+                gutterBottom>
+                Compatible Bike
+              </Typography>
+              <FormControl
+                component='fieldset'
+                sx={{ mb: 3, width: '100%' }}>
+                <FormGroup>
+                  {bikeFilters.map((bike) => (
+                    <FormControlLabel
+                      key={bike}
+                      control={
+                        <Checkbox
+                          checked={selectedBikes[bike] || false}
+                          onChange={handleBikeCheckboxChange}
+                          name={bike}
+                          size='small'
+                        />
+                      }
+                      label={bike}
+                    />
+                  ))}
+                </FormGroup>
+              </FormControl>
+
               <Typography
                 variant='subtitle2'
                 gutterBottom>
@@ -283,7 +392,7 @@ const Marketplace = () => {
                 <Typography
                   variant='subtitle2'
                   color='text.secondary'>
-                  {filteredProducts.length} products found
+                  {filteredProducts.length} unique products found
                 </Typography>
               </Box>
             </Paper>
@@ -371,28 +480,24 @@ const Marketplace = () => {
                           variant='body2'
                           color='text.secondary'
                           sx={{ mb: 1 }}>
-                          {product.category && (
-                            <Chip
-                              label={product.category}
-                              size='small'
-                              variant='outlined'
-                              sx={{ mr: 0.5 }}
-                            />
-                          )}
-                          {product.condition && (
-                            <Chip
-                              label={product.condition}
-                              size='small'
-                              variant='outlined'
-                              color={
-                                product.condition === 'New'
-                                  ? 'success'
-                                  : product.condition === 'Used'
-                                  ? 'warning'
-                                  : 'default'
-                              }
-                            />
-                          )}
+                          {/* Display compatible bikes as chips */}
+                          {product.compatibleBikes &&
+                            product.compatibleBikes.map((bike) => (
+                              <Chip
+                                key={bike}
+                                label={bike}
+                                size='small'
+                                variant='outlined'
+                                sx={{ mr: 0.5, mb: 0.5 }}
+                              />
+                            ))}
+
+                          <Chip
+                            label={`Stock: ${product.quantity}`}
+                            size='small'
+                            variant='outlined'
+                            color={product.quantity > 0 ? 'success' : 'error'}
+                          />
                         </Typography>
 
                         <Typography
@@ -412,7 +517,7 @@ const Marketplace = () => {
                           Rs. {product.price.toFixed(2)}
                         </Typography>
 
-                        {product.inStock === false && (
+                        {product.quantity <= 0 && (
                           <Typography
                             variant='body2'
                             color='error'
@@ -427,7 +532,7 @@ const Marketplace = () => {
                           fullWidth
                           onClick={() => handleAddToCart(product)}
                           startIcon={<ShoppingCartIcon />}
-                          disabled={product.inStock === false}>
+                          disabled={product.quantity <= 0}>
                           Add to Cart
                         </Button>
                       </CardActions>
