@@ -1,6 +1,6 @@
 export const Logo = [
   {
-    name: 'Dominar',
+    name: 'Bajaj',
     logo: '/assets/images/logo/Bajaj-Logo.png',
   },
   {
