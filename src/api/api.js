@@ -203,7 +203,11 @@ export const getMechanicByIdApi = (id) =>
   Api.get(`/api/mechanic/${id}`, config);
 
 export const getAssignedBookingMechanicApi = (id) =>
-  Api.get(`/api/mechanic/assigned/${id}`, config);
+  Api.get(`/api/mechanics/assigned/${id}`, config);
 
-export const assignMechamnicToBookingApi = (id) =>
-  Api.put(`/api/mechanic/${id}`, config);
+export const assignMechanicToBookingApi = (id, data) =>
+  Api.put(`/api/mechanics/${id}`, data, config);
+
+export const updateBookingStatusApi = (id, data) => {
+  return Api.put(`/api/booking/status/${id}`, data, config);
+};

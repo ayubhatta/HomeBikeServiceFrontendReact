@@ -134,6 +134,7 @@ function App() {
             path='/admin/customerDashboard'
             element={<CustomerDashboard />}
           />
+
           <Route
             path='/admin/mechanic'
             element={<MechanicList />}

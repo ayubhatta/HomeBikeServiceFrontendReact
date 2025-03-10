@@ -3,14 +3,22 @@ import {
   CheckCircle as CheckCircleIcon,
   Close as CloseIcon,
   Pending as PendingIcon,
+  ShoppingCart as ShoppingCartIcon,
   Timeline as TimelineIcon,
 } from '@mui/icons-material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Alert,
   Box,
   Button,
   Card,
   CardActions,
   CardContent,
+  Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -20,74 +28,215 @@ import {
   IconButton,
   List,
   Paper,
+  Snackbar,
   TextField,
   Typography,
   useTheme,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { getAssignedBookingMechanicApi, userID } from '../../../api/api';
 import {
   AppBarComponent,
   SidebarComponent,
 } from '../../../components/Navbar/MechanicNavbar';
 
-// Mock data for tasks
-const initialTasks = [
-  {
-    id: 1,
-    title: 'Oil Change - Honda Civic',
-    description: 'Complete oil change for Honda Civic (License: ABC123)',
-    status: 'pending',
-    vehicle: 'Honda Civic 2020',
-    customer: 'John Smith',
-    estimatedTime: '30 mins',
-    assignedDate: '2025-03-04',
-    notes: '',
-  },
-  {
-    id: 2,
-    title: 'Brake Replacement - Toyota Camry',
-    description: 'Replace front and rear brake pads on Toyota Camry',
-    status: 'pending',
-    vehicle: 'Toyota Camry 2018',
-    customer: 'Sarah Johnson',
-    estimatedTime: '2 hours',
-    assignedDate: '2025-03-04',
-    notes: '',
-  },
-  {
-    id: 3,
-    title: 'Engine Diagnostic - Ford F-150',
-    description: 'Diagnose check engine light and resolve issue',
-    status: 'in-progress',
-    vehicle: 'Ford F-150 2021',
-    customer: 'Mike Thompson',
-    estimatedTime: '1.5 hours',
-    assignedDate: '2025-03-03',
-    notes: 'Initial diagnostic shows potential fuel pump issue',
-  },
-  {
-    id: 4,
-    title: 'Tire Rotation - Chevrolet Malibu',
-    description: 'Perform tire rotation and pressure check',
-    status: 'completed',
-    vehicle: 'Chevrolet Malibu 2019',
-    customer: 'Emily Wilson',
-    estimatedTime: '45 mins',
-    assignedDate: '2025-03-02',
-    completedDate: '2025-03-03',
-    notes:
-      'All tires were in good condition, replaced valve caps on rear tires',
-  },
-];
-
 // Main Dashboard Component
 function MechanicDashboard() {
   const theme = useTheme();
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editedTask, setEditedTask] = useState(null);
+  const [cartDialogOpen, setCartDialogOpen] = useState(false);
+
+  /**
+   * Maps API response data to the task format required by the MechanicDashboard component
+   * @param {Object} apiResponse - The raw API response
+   * @returns {Object} - A properly formatted task object
+   */
+  const mapApiResponseToTask = (apiResponse) => {
+    // Extract the booking details for easier access
+    const booking = apiResponse.bookingDetails;
+    const user = booking.userDetails;
+    const bike = booking.bikeDetails;
+
+    // Format the booking time for better display
+    const formatTime = (timeString) => {
+      if (!timeString) return 'N/A';
+      try {
+        const [hours, minutes] = timeString.split(':');
+        const hour = parseInt(hours);
+        const period = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+        return `${displayHour}:${minutes} ${period}`;
+      } catch (e) {
+        return timeString;
+      }
+    };
+
+    // Format cart items to display parts information
+    const formatCartItems = () => {
+      if (!user.cart || !Array.isArray(user.cart) || user.cart.length === 0) {
+        return 'No parts requested';
+      }
+
+      return user.cart
+        .map((item) => {
+          const part = item.cartDetails;
+          return `${part.partName} (${item.quantity}x) - $${part.price} each`;
+        })
+        .join('\n');
+    };
+
+    // Calculate total cost of parts
+    const calculatePartsCost = () => {
+      if (!user.cart || !Array.isArray(user.cart) || user.cart.length === 0) {
+        return 0;
+      }
+      return user.cart.reduce((total, item) => {
+        return total + item.quantity * item.cartDetails.price;
+      }, 0);
+    };
+
+    const partsCost = calculatePartsCost();
+
+    // Create a properly formatted task object
+    return {
+      id: booking.id,
+      status: booking.status || 'pending', // Using the status from the booking
+      title: `Service for ${bike.bikeName} ${bike.bikeModel}`,
+      description:
+        booking.bikeDescription || 'Standard service and maintenance',
+
+      // Vehicle information
+      vehicle: `${bike.bikeName} ${bike.bikeModel}`,
+      vehicleDetails: `${bike.bikeName} ${bike.bikeModel} (${booking.bikeNumber})`,
+
+      // Customer information
+      customer: user.fullName,
+      customerName: user.fullName,
+
+      // Dates and times
+      assignedDate: booking.bookingDate,
+      bookingTime: formatTime(booking.bookingTime),
+      estimatedTime: formatTime(booking.bookingTime),
+      bookingId: booking.id,
+
+      // Cost information
+      serviceCost: booking.total || bike.bikePrice,
+      partsCost: partsCost,
+      totalCost: (booking.total || bike.bikePrice) + partsCost,
+
+      // Parts information
+      parts: user.cart || [],
+      hasParts: user.cart && user.cart.length > 0,
+
+      // Additional details that might be useful
+      serviceType: 'Bike Service',
+      notes: `Bike Chasis Number: ${booking.bikeChasisNumber || 'N/A'}
+Address: ${booking.bookingAddress || 'N/A'}
+Contact: ${user.phoneNumber} / ${user.email}
+Estimated Service Cost: $${booking.total || bike.bikePrice}
+Parts Cost: $${partsCost}
+Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
+
+      // Original data preserved for reference if needed
+      rawData: {
+        mechanic: {
+          id: apiResponse.id,
+          name: apiResponse.name,
+          phoneNumber: apiResponse.phoneNumber,
+        },
+        booking: booking,
+        customer: user,
+        bike: bike,
+        cart: user.cart || [],
+      },
+    };
+  };
+
+  // Fetch assigned tasks from API
+  const fetchAssignedTasks = async () => {
+    try {
+      setLoading(true);
+      // Assuming you have the mechanic ID from auth or context
+      const mechanicId = userID;
+
+      const response = await getAssignedBookingMechanicApi(mechanicId);
+
+      // Set tasks from API response
+      if (response && response.data) {
+        let formattedTasks = [];
+
+        // Check if bookingDetails exists and is an array
+        if (
+          response.data.bookingDetails &&
+          Array.isArray(response.data.bookingDetails)
+        ) {
+          // Map each booking in the bookingDetails array
+          formattedTasks = response.data.bookingDetails.map((booking) => {
+            return mapApiResponseToTask({
+              id: response.data.id,
+              name: response.data.name,
+              phoneNumber: response.data.phoneNumber,
+              bookingDetails: booking,
+            });
+          });
+        } else if (Array.isArray(response.data)) {
+          // Fallback to original logic if response.data is an array
+          formattedTasks = response.data.map(mapApiResponseToTask);
+        } else {
+          // Handle single booking case
+          formattedTasks = [mapApiResponseToTask(response.data)];
+        }
+
+        setTasks(formattedTasks);
+
+        // If there are tasks, select the first one by default
+        if (formattedTasks.length > 0) {
+          setSelectedTask(formattedTasks[0]);
+        }
+
+        setSnackbar({
+          open: true,
+          message: 'Tasks loaded successfully',
+          severity: 'success',
+        });
+      } else {
+        // If response is empty or invalid
+        setTasks([]);
+        setSnackbar({
+          open: true,
+          message: 'No tasks available at the moment',
+          severity: 'info',
+        });
+      }
+
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching assigned tasks:', err);
+      setError('Failed to load tasks. Please try again later.');
+      setSnackbar({
+        open: true,
+        message: 'Failed to load tasks. Using sample data instead.',
+        severity: 'error',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAssignedTasks();
+  }, []);
 
   // Task status counts
   const pendingTasks = tasks.filter((task) => task.status === 'pending').length;
@@ -106,38 +255,97 @@ function MechanicDashboard() {
     setDrawerOpen(false);
   };
 
-  const handleStatusChange = (taskId, newStatus) => {
-    const updatedTasks = tasks.map((task) => {
-      if (task.id === taskId) {
-        const updatedTask = { ...task, status: newStatus };
-        // Add completedDate when task is marked as completed
-        if (newStatus === 'completed') {
-          updatedTask.completedDate = new Date().toISOString().split('T')[0];
+  const handleStatusChange = async (taskId, newStatus) => {
+    try {
+      const updatedTasks = tasks.map((task) => {
+        if (task.id === taskId) {
+          const updatedTask = { ...task, status: newStatus };
+          if (newStatus === 'completed') {
+            updatedTask.completedDate = new Date().toISOString().split('T')[0];
+          }
+          return updatedTask;
         }
-        return updatedTask;
-      }
-      return task;
-    });
-    setTasks(updatedTasks);
+        return task;
+      });
 
-    // If changing to completed, open the edit dialog
-    if (newStatus === 'completed') {
-      const task = tasks.find((t) => t.id === taskId);
-      setEditedTask({ ...task, status: newStatus });
-      setEditDialogOpen(true);
+      setTasks(updatedTasks);
+
+      // Update selectedTask if it's the one being updated
+      if (selectedTask && selectedTask.id === taskId) {
+        setSelectedTask((prev) => ({ ...prev, status: newStatus }));
+      }
+
+      // Show success message
+      setSnackbar({
+        open: true,
+        message: `Task status updated to ${newStatus}`,
+        severity: 'success',
+      });
+
+      // If changing to completed, open the edit dialog
+      if (newStatus === 'completed') {
+        const task = tasks.find((t) => t.id === taskId);
+        setEditedTask({ ...task, status: newStatus });
+        setEditDialogOpen(true);
+      }
+    } catch (err) {
+      console.error('Error updating task status:', err);
+      setSnackbar({
+        open: true,
+        message: 'Failed to update task status',
+        severity: 'error',
+      });
     }
   };
 
-  const handleEditTask = () => {
-    const updatedTasks = tasks.map((task) =>
-      task.id === editedTask.id ? editedTask : task
-    );
-    setTasks(updatedTasks);
-    setEditDialogOpen(false);
+  const handleEditTask = async () => {
+    try {
+      // Here you could add API call to update task details
+      // For example: await updateTaskApi(editedTask);
+
+      const updatedTasks = tasks.map((task) =>
+        task.id === editedTask.id ? editedTask : task
+      );
+
+      setTasks(updatedTasks);
+
+      // Update selected task if it's the one being edited
+      if (selectedTask && selectedTask.id === editedTask.id) {
+        setSelectedTask(editedTask);
+      }
+
+      setEditDialogOpen(false);
+
+      // Show success message
+      setSnackbar({
+        open: true,
+        message: 'Task updated successfully',
+        severity: 'success',
+      });
+    } catch (err) {
+      console.error('Error updating task:', err);
+      setSnackbar({
+        open: true,
+        message: 'Failed to update task',
+        severity: 'error',
+      });
+    }
   };
 
   const handleTaskSelection = (task) => {
     setSelectedTask(task);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({
+      ...snackbar,
+      open: false,
+    });
+  };
+
+  const openCartDialog = (task) => {
+    setSelectedTask(task);
+    setCartDialogOpen(true);
   };
 
   const getStatusIcon = (status) => {
@@ -164,6 +372,11 @@ function MechanicDashboard() {
       default:
         return theme.palette.grey[500];
     }
+  };
+
+  // Get a displayed value safely from a task
+  const getTaskValue = (task, field, defaultValue = 'Not available') => {
+    return task[field] || defaultValue;
   };
 
   return (
@@ -274,95 +487,164 @@ function MechanicDashboard() {
             xs={12}
             md={6}>
             <Paper sx={{ p: 2 }}>
-              <Typography
-                variant='h6'
-                sx={{ mb: 2 }}>
-                My Tasks
-              </Typography>
+              <Box
+                display='flex'
+                justifyContent='space-between'
+                alignItems='center'
+                mb={2}>
+                <Typography variant='h6'>My Tasks</Typography>
+                <Button
+                  variant='outlined'
+                  size='small'
+                  disabled={loading}
+                  onClick={fetchAssignedTasks}>
+                  Refresh
+                </Button>
+              </Box>
               <Divider sx={{ mb: 2 }} />
-              <List>
-                {tasks.map((task) => (
-                  <Card
-                    key={task.id}
-                    sx={{
-                      mb: 2,
-                      border: `1px solid ${getStatusColor(task.status)}`,
-                      cursor: 'pointer',
-                      backgroundColor:
-                        selectedTask?.id === task.id ? '#f0f7ff' : 'white',
-                    }}
-                    onClick={() => handleTaskSelection(task)}>
-                    <CardContent>
-                      <Box
-                        display='flex'
-                        justifyContent='space-between'
-                        alignItems='center'>
-                        <Typography variant='h6'>{task.title}</Typography>
-                        {getStatusIcon(task.status)}
-                      </Box>
-                      <Typography
-                        variant='body2'
-                        color='text.secondary'
-                        sx={{ mt: 1 }}>
-                        {task.description}
-                      </Typography>
-                      <Box
-                        display='flex'
-                        justifyContent='space-between'
-                        sx={{ mt: 2 }}>
+
+              {loading ? (
+                <Box
+                  display='flex'
+                  justifyContent='center'
+                  alignItems='center'
+                  py={4}>
+                  <CircularProgress />
+                </Box>
+              ) : error ? (
+                <Box
+                  textAlign='center'
+                  py={4}>
+                  <Typography color='error'>{error}</Typography>
+                  <Button
+                    variant='contained'
+                    sx={{ mt: 2 }}
+                    onClick={fetchAssignedTasks}>
+                    Retry
+                  </Button>
+                </Box>
+              ) : tasks.length === 0 ? (
+                <Box
+                  textAlign='center'
+                  py={4}>
+                  <Typography>No tasks assigned at the moment.</Typography>
+                </Box>
+              ) : (
+                <List>
+                  {tasks.map((task) => (
+                    <Card
+                      key={task.id}
+                      sx={{
+                        mb: 2,
+                        border: `1px solid ${getStatusColor(task.status)}`,
+                        cursor: 'pointer',
+                        backgroundColor:
+                          selectedTask?.id === task.id ? '#f0f7ff' : 'white',
+                      }}
+                      onClick={() => handleTaskSelection(task)}>
+                      <CardContent>
+                        <Box
+                          display='flex'
+                          justifyContent='space-between'
+                          alignItems='center'>
+                          <Typography variant='h6'>
+                            {getTaskValue(
+                              task,
+                              'title',
+                              task.serviceType || 'Service Task'
+                            )}
+                          </Typography>
+                          <Box
+                            display='flex'
+                            alignItems='center'>
+                            {task.hasParts && (
+                              <ShoppingCartIcon
+                                sx={{
+                                  color: theme.palette.primary.main,
+                                  mr: 1,
+                                  fontSize: 20,
+                                }}
+                              />
+                            )}
+                            {getStatusIcon(task.status)}
+                          </Box>
+                        </Box>
                         <Typography
                           variant='body2'
-                          color='text.secondary'>
-                          Vehicle: {task.vehicle}
+                          color='text.secondary'
+                          sx={{ mt: 1 }}>
+                          {getTaskValue(task, 'description')}
                         </Typography>
-                        <Typography
-                          variant='body2'
-                          color='text.secondary'>
-                          Est. Time: {task.estimatedTime}
-                        </Typography>
-                      </Box>
-                    </CardContent>
-                    <CardActions>
-                      {task.status === 'pending' && (
-                        <Button
-                          size='small'
-                          variant='contained'
-                          color='info'
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleStatusChange(task.id, 'in-progress');
-                          }}>
-                          Start Task
-                        </Button>
-                      )}
-                      {task.status === 'in-progress' && (
-                        <Button
-                          size='small'
-                          variant='contained'
-                          color='success'
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleStatusChange(task.id, 'completed');
-                          }}>
-                          Complete Task
-                        </Button>
-                      )}
-                      {task.status === 'completed' && (
-                        <Button
-                          size='small'
-                          variant='outlined'
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditedTask({ ...task });
-                            setEditDialogOpen(true);
-                          }}>
-                          View Details
-                        </Button>
-                      )}
-                    </CardActions>
-                  </Card>
-                ))}
-              </List>
+                        <Box
+                          display='flex'
+                          justifyContent='space-between'
+                          sx={{ mt: 2 }}>
+                          <Typography
+                            variant='body2'
+                            color='text.secondary'>
+                            Vehicle:{' '}
+                            {getTaskValue(task, 'vehicleDetails', task.vehicle)}
+                          </Typography>
+                          <Typography
+                            variant='body2'
+                            color='text.secondary'>
+                            Est. Time: {getTaskValue(task, 'estimatedTime')}
+                          </Typography>
+                        </Box>
+                      </CardContent>
+                      <CardActions>
+                        {task.status === 'pending' && (
+                          <Button
+                            size='small'
+                            variant='contained'
+                            color='info'
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStatusChange(task.id, 'in-progress');
+                            }}>
+                            Start Task
+                          </Button>
+                        )}
+                        {task.status === 'in-progress' && (
+                          <Button
+                            size='small'
+                            variant='contained'
+                            color='success'
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStatusChange(task.id, 'completed');
+                            }}>
+                            Complete Task
+                          </Button>
+                        )}
+                        {task.status === 'completed' && (
+                          <Button
+                            size='small'
+                            variant='outlined'
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditedTask({ ...task });
+                              setEditDialogOpen(true);
+                            }}>
+                            View Details
+                          </Button>
+                        )}
+                        {task.hasParts && (
+                          <Button
+                            size='small'
+                            startIcon={<ShoppingCartIcon />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openCartDialog(task);
+                            }}>
+                            View Parts
+                          </Button>
+                        )}
+                      </CardActions>
+                    </Card>
+                  ))}
+                </List>
+              )}
             </Paper>
           </Grid>
 
@@ -400,12 +682,16 @@ function MechanicDashboard() {
                   <Typography
                     variant='h5'
                     sx={{ mb: 2 }}>
-                    {selectedTask.title}
+                    {getTaskValue(
+                      selectedTask,
+                      'title',
+                      selectedTask.serviceType || 'Service Task'
+                    )}
                   </Typography>
                   <Typography
                     variant='body1'
                     sx={{ mb: 3 }}>
-                    {selectedTask.description}
+                    {getTaskValue(selectedTask, 'description')}
                   </Typography>
 
                   <Grid
@@ -417,7 +703,11 @@ function MechanicDashboard() {
                       xs={6}>
                       <Typography variant='subtitle2'>Customer</Typography>
                       <Typography variant='body1'>
-                        {selectedTask.customer}
+                        {getTaskValue(
+                          selectedTask,
+                          'customerName',
+                          selectedTask.customer
+                        )}
                       </Typography>
                     </Grid>
                     <Grid
@@ -425,25 +715,43 @@ function MechanicDashboard() {
                       xs={6}>
                       <Typography variant='subtitle2'>Vehicle</Typography>
                       <Typography variant='body1'>
-                        {selectedTask.vehicle}
-                      </Typography>
-                    </Grid>
-                    <Grid
-                      item
-                      xs={6}>
-                      <Typography variant='subtitle2'>Assigned Date</Typography>
-                      <Typography variant='body1'>
-                        {selectedTask.assignedDate}
+                        {getTaskValue(
+                          selectedTask,
+                          'vehicleDetails',
+                          selectedTask.vehicle
+                        )}
                       </Typography>
                     </Grid>
                     <Grid
                       item
                       xs={6}>
                       <Typography variant='subtitle2'>
-                        Estimated Time
+                        Appointment Date
                       </Typography>
                       <Typography variant='body1'>
-                        {selectedTask.estimatedTime}
+                        {getTaskValue(selectedTask, 'assignedDate')}
+                      </Typography>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={6}>
+                      <Typography variant='subtitle2'>
+                        Appointment Time
+                      </Typography>
+                      <Typography variant='body1'>
+                        {getTaskValue(
+                          selectedTask,
+                          'bookingTime',
+                          getTaskValue(selectedTask, 'estimatedTime')
+                        )}
+                      </Typography>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={6}>
+                      <Typography variant='subtitle2'>Booking ID</Typography>
+                      <Typography variant='body1'>
+                        {getTaskValue(selectedTask, 'bookingId')}
                       </Typography>
                     </Grid>
                     {selectedTask.completedDate && (
@@ -458,12 +766,175 @@ function MechanicDashboard() {
                         </Typography>
                       </Grid>
                     )}
+                    <Grid
+                      item
+                      xs={12}>
+                      <Typography variant='subtitle2'>Contact Info</Typography>
+                      <Typography variant='body1'>
+                        {selectedTask.rawData?.customer?.phoneNumber || 'N/A'} /{' '}
+                        {selectedTask.rawData?.customer?.email || 'N/A'}
+                      </Typography>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={12}>
+                      <Typography variant='subtitle2'>
+                        Service Location
+                      </Typography>
+                      <Typography variant='body1'>
+                        {selectedTask.rawData?.booking?.bookingAddress || 'N/A'}
+                      </Typography>
+                    </Grid>
+
+                    {/* Cost Information */}
+                    <Grid
+                      item
+                      xs={12}>
+                      <Accordion sx={{ mt: 2 }}>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                          <Typography variant='subtitle1'>
+                            Cost Information
+                          </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <Grid
+                            container
+                            spacing={2}>
+                            <Grid
+                              item
+                              xs={6}>
+                              <Typography variant='subtitle2'>
+                                Service Cost
+                              </Typography>
+                              <Typography variant='body1'>
+                                ${selectedTask.serviceCost}
+                              </Typography>
+                            </Grid>
+                            <Grid
+                              item
+                              xs={6}>
+                              <Typography variant='subtitle2'>
+                                Parts Cost
+                              </Typography>
+                              <Typography variant='body1'>
+                                ${selectedTask.partsCost}
+                              </Typography>
+                            </Grid>
+                            <Grid
+                              item
+                              xs={12}>
+                              <Divider sx={{ my: 1 }} />
+                              <Box
+                                display='flex'
+                                justifyContent='space-between'>
+                                <Typography
+                                  variant='subtitle1'
+                                  fontWeight='bold'>
+                                  Total Cost
+                                </Typography>
+                                <Typography
+                                  variant='subtitle1'
+                                  fontWeight='bold'>
+                                  ${selectedTask.totalCost}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                          </Grid>
+                        </AccordionDetails>
+                      </Accordion>
+                    </Grid>
+
+                    {/* Parts Information */}
+                    {selectedTask.hasParts && (
+                      <Grid
+                        item
+                        xs={12}>
+                        <Accordion sx={{ mt: 2 }}>
+                          <AccordionSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            sx={{
+                              backgroundColor: theme.palette.primary.light,
+                              color: theme.palette.primary.contrastText,
+                            }}>
+                            <Box
+                              display='flex'
+                              alignItems='center'>
+                              <ShoppingCartIcon sx={{ mr: 1 }} />
+                              <Typography variant='subtitle1'>
+                                Parts Information
+                              </Typography>
+                            </Box>
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            <List>
+                              {selectedTask.parts.map((item, index) => (
+                                <Card
+                                  key={index}
+                                  sx={{ mb: 1, p: 1 }}>
+                                  <Box
+                                    display='flex'
+                                    justifyContent='space-between'
+                                    alignItems='center'>
+                                    <Box>
+                                      <Typography variant='subtitle2'>
+                                        {item.cartDetails.partName}
+                                      </Typography>
+                                      <Typography
+                                        variant='body2'
+                                        color='text.secondary'>
+                                        {item.cartDetails.description}
+                                      </Typography>
+                                    </Box>
+                                    <Box textAlign='right'>
+                                      <Chip
+                                        label={`${item.quantity}x`}
+                                        size='small'
+                                        color='primary'
+                                        sx={{ mb: 1 }}
+                                      />
+                                      <Typography variant='body2'>
+                                        ${item.cartDetails.price} each
+                                      </Typography>
+                                      <Typography
+                                        variant='subtitle2'
+                                        fontWeight='bold'>
+                                        Total: $
+                                        {item.quantity * item.cartDetails.price}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
+                                </Card>
+                              ))}
+                            </List>
+                            <Divider sx={{ my: 1 }} />
+                            <Box
+                              display='flex'
+                              justifyContent='space-between'>
+                              <Typography
+                                variant='subtitle1'
+                                fontWeight='bold'>
+                                Parts Total
+                              </Typography>
+                              <Typography
+                                variant='subtitle1'
+                                fontWeight='bold'>
+                                ${selectedTask.partsCost}
+                              </Typography>
+                            </Box>
+                          </AccordionDetails>
+                        </Accordion>
+                      </Grid>
+                    )}
                   </Grid>
 
                   <Box sx={{ mt: 2 }}>
                     <Typography variant='subtitle2'>Notes</Typography>
                     <Typography variant='body1'>
-                      {selectedTask.notes || 'No notes available'}
+                      {getTaskValue(
+                        selectedTask,
+                        'notes',
+                        'No notes available'
+                      )}
                     </Typography>
                   </Box>
 
@@ -500,6 +971,17 @@ function MechanicDashboard() {
                         setEditDialogOpen(true);
                       }}>
                       Edit Details
+                    </Button>
+                  )}
+
+                  {selectedTask.hasParts && (
+                    <Button
+                      variant='outlined'
+                      color='primary'
+                      startIcon={<ShoppingCartIcon />}
+                      sx={{ mt: 3, ml: 2 }}
+                      onClick={() => openCartDialog(selectedTask)}>
+                      View Parts
                     </Button>
                   )}
                 </>
@@ -557,7 +1039,7 @@ function MechanicDashboard() {
                 <TextField
                   label='Task Title'
                   fullWidth
-                  value={editedTask.title}
+                  value={editedTask.title || editedTask.serviceType || ''}
                   onChange={(e) =>
                     setEditedTask({ ...editedTask, title: e.target.value })
                   }
@@ -572,7 +1054,7 @@ function MechanicDashboard() {
                   fullWidth
                   multiline
                   rows={2}
-                  value={editedTask.description}
+                  value={editedTask.description || ''}
                   onChange={(e) =>
                     setEditedTask({
                       ...editedTask,
@@ -589,9 +1071,12 @@ function MechanicDashboard() {
                 <TextField
                   label='Vehicle'
                   fullWidth
-                  value={editedTask.vehicle}
+                  value={editedTask.vehicleDetails || editedTask.vehicle || ''}
                   onChange={(e) =>
-                    setEditedTask({ ...editedTask, vehicle: e.target.value })
+                    setEditedTask({
+                      ...editedTask,
+                      vehicleDetails: e.target.value,
+                    })
                   }
                   margin='normal'
                 />
@@ -603,9 +1088,12 @@ function MechanicDashboard() {
                 <TextField
                   label='Customer'
                   fullWidth
-                  value={editedTask.customer}
+                  value={editedTask.customerName || editedTask.customer || ''}
                   onChange={(e) =>
-                    setEditedTask({ ...editedTask, customer: e.target.value })
+                    setEditedTask({
+                      ...editedTask,
+                      customerName: e.target.value,
+                    })
                   }
                   margin='normal'
                 />
@@ -618,7 +1106,7 @@ function MechanicDashboard() {
                   fullWidth
                   multiline
                   rows={4}
-                  value={editedTask.notes}
+                  value={editedTask.notes || ''}
                   onChange={(e) =>
                     setEditedTask({ ...editedTask, notes: e.target.value })
                   }
@@ -641,6 +1129,20 @@ function MechanicDashboard() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

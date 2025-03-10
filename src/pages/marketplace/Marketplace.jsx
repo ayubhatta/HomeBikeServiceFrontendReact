@@ -173,9 +173,10 @@ const Marketplace = () => {
         quantity: 1,
       };
 
-      await addToCartApi(data);
-      setCartCount((prevCount) => prevCount + 1);
-      toast.success(`${product.partName} added to cart`);
+      await addToCartApi(data).then((res) => {
+        setCartCount((prevCount) => prevCount + 1);
+        toast.success(`${product.partName} added to cart`);
+      });
     } catch (error) {
       console.error('Failed to add to cart:', error);
       toast.error('Failed to add to cart. Please try again.');
