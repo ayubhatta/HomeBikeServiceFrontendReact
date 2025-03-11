@@ -1,7 +1,6 @@
 import {
   Assignment as AssignmentIcon,
   CheckCircle as CheckCircleIcon,
-  Close as CloseIcon,
   Pending as PendingIcon,
   ShoppingCart as ShoppingCartIcon,
   Timeline as TimelineIcon,
@@ -19,22 +18,21 @@ import {
   CardContent,
   Chip,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Divider,
   Grid,
-  IconButton,
   List,
   Paper,
   Snackbar,
-  TextField,
   Typography,
   useTheme,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { getAssignedBookingMechanicApi, userID } from '../../../api/api';
+import {
+  getAssignedBookingMechanicApi,
+  updateBookingStatusApi,
+  updateBookingStatusToCompletedApi,
+  userID,
+} from '../../../api/api';
 import {
   AppBarComponent,
   SidebarComponent,
@@ -241,10 +239,10 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
   // Task status counts
   const pendingTasks = tasks.filter((task) => task.status === 'pending').length;
   const inProgressTasks = tasks.filter(
-    (task) => task.status === 'in-progress'
+    (task) => task.status === 'In-Progress'
   ).length;
-  const completedTasks = tasks.filter(
-    (task) => task.status === 'completed'
+  const completeTasks = tasks.filter(
+    (task) => task.status === 'Complete'
   ).length;
 
   const handleDrawerToggle = () => {
@@ -255,38 +253,59 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
     setDrawerOpen(false);
   };
 
-  const handleStatusChange = async (taskId, newStatus) => {
+  const handleStatusChange = async (taskId, newStatus, mechanicId) => {
     try {
-      const updatedTasks = tasks.map((task) => {
-        if (task.id === taskId) {
-          const updatedTask = { ...task, status: newStatus };
-          if (newStatus === 'completed') {
-            updatedTask.completedDate = new Date().toISOString().split('T')[0];
-          }
-          return updatedTask;
-        }
-        return task;
-      });
+      let apiResponse;
+      console.log('Task ID:', taskId);
 
-      setTasks(updatedTasks);
-
-      // Update selectedTask if it's the one being updated
-      if (selectedTask && selectedTask.id === taskId) {
-        setSelectedTask((prev) => ({ ...prev, status: newStatus }));
+      // Determine which API function to call based on the new status
+      if (newStatus === 'In-Progress') {
+        const data = {
+          isAssignedTo: taskId,
+        };
+        apiResponse = await updateBookingStatusApi(data);
+      } else if (newStatus === 'Complete') {
+        const data = {
+          isAssignedTo: [taskId],
+        };
+        apiResponse = await updateBookingStatusToCompletedApi(data);
       }
 
-      // Show success message
-      setSnackbar({
-        open: true,
-        message: `Task status updated to ${newStatus}`,
-        severity: 'success',
-      });
+      // If the API call is successful, update the local state
+      if (apiResponse?.status === 200) {
+        const updatedTasks = tasks.map((task) => {
+          if (task.id === taskId) {
+            const updatedTask = { ...task, status: newStatus };
+            if (newStatus === 'Complete') {
+              updatedTask.completeDate = new Date().toISOString().split('T')[0];
+            }
+            return updatedTask;
+          }
+          return task;
+        });
 
-      // If changing to completed, open the edit dialog
-      if (newStatus === 'completed') {
-        const task = tasks.find((t) => t.id === taskId);
-        setEditedTask({ ...task, status: newStatus });
-        setEditDialogOpen(true);
+        setTasks(updatedTasks);
+
+        // Update selectedTask if it's the one being updated
+        if (selectedTask && selectedTask.id === taskId) {
+          setSelectedTask((prev) => ({ ...prev, status: newStatus }));
+        }
+
+        // Show success message
+        setSnackbar({
+          open: true,
+          message: `Task status updated to ${newStatus}`,
+          severity: 'success',
+        });
+
+        // If changing to complete, open the edit dialog
+        if (newStatus === 'Complete') {
+          const task = tasks.find((t) => t.id === taskId);
+          setEditedTask({ ...task, status: newStatus });
+          setEditDialogOpen(true);
+        }
+      } else {
+        throw new Error('API request failed');
       }
     } catch (err) {
       console.error('Error updating task status:', err);
@@ -352,9 +371,9 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
     switch (status) {
       case 'pending':
         return <PendingIcon sx={{ color: theme.palette.warning.main }} />;
-      case 'in-progress':
+      case 'In-Progress':
         return <TimelineIcon sx={{ color: theme.palette.info.main }} />;
-      case 'completed':
+      case 'Complete':
         return <CheckCircleIcon sx={{ color: theme.palette.success.main }} />;
       default:
         return <PendingIcon />;
@@ -365,9 +384,9 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
     switch (status) {
       case 'pending':
         return theme.palette.warning.main;
-      case 'in-progress':
+      case 'In-Progress':
         return theme.palette.info.main;
-      case 'completed':
+      case 'Complete':
         return theme.palette.success.main;
       default:
         return theme.palette.grey[500];
@@ -468,8 +487,8 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
                     }}
                   />
                   <Box>
-                    <Typography variant='h4'>{completedTasks}</Typography>
-                    <Typography variant='body1'>Completed</Typography>
+                    <Typography variant='h4'>{completeTasks}</Typography>
+                    <Typography variant='body1'>Complete</Typography>
                   </Box>
                 </Box>
               </CardContent>
@@ -600,24 +619,24 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
                             color='info'
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleStatusChange(task.id, 'in-progress');
+                              handleStatusChange(task.id, 'In-Progress');
                             }}>
                             Start Task
                           </Button>
                         )}
-                        {task.status === 'in-progress' && (
+                        {task.status === 'In-Progress' && (
                           <Button
                             size='small'
                             variant='contained'
                             color='success'
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleStatusChange(task.id, 'completed');
+                              handleStatusChange(task.id, 'Complete');
                             }}>
                             Complete Task
                           </Button>
                         )}
-                        {task.status === 'completed' && (
+                        {task.status === 'Complete' && (
                           <Button
                             size='small'
                             variant='outlined'
@@ -754,15 +773,15 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
                         {getTaskValue(selectedTask, 'bookingId')}
                       </Typography>
                     </Grid>
-                    {selectedTask.completedDate && (
+                    {selectedTask.completeDate && (
                       <Grid
                         item
                         xs={6}>
                         <Typography variant='subtitle2'>
-                          Completed Date
+                          Complete Date
                         </Typography>
                         <Typography variant='body1'>
-                          {selectedTask.completedDate}
+                          {selectedTask.completeDate}
                         </Typography>
                       </Grid>
                     )}
@@ -944,25 +963,25 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
                       color='info'
                       sx={{ mt: 3 }}
                       onClick={() =>
-                        handleStatusChange(selectedTask.id, 'in-progress')
+                        handleStatusChange(selectedTask.id, 'In-Progress')
                       }>
                       Start Task
                     </Button>
                   )}
 
-                  {selectedTask.status === 'in-progress' && (
+                  {selectedTask.status === 'In-Progress' && (
                     <Button
                       variant='contained'
                       color='success'
                       sx={{ mt: 3 }}
                       onClick={() =>
-                        handleStatusChange(selectedTask.id, 'completed')
+                        handleStatusChange(selectedTask.id, 'Complete')
                       }>
                       Complete Task
                     </Button>
                   )}
 
-                  {selectedTask.status === 'completed' && (
+                  {/* {selectedTask.status === 'Complete' && (
                     <Button
                       variant='outlined'
                       sx={{ mt: 3 }}
@@ -983,7 +1002,7 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
                       onClick={() => openCartDialog(selectedTask)}>
                       View Parts
                     </Button>
-                  )}
+                  )} */}
                 </>
               ) : (
                 <Box
@@ -1008,7 +1027,7 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
       </Box>
 
       {/* Edit Task Dialog */}
-      <Dialog
+      {/* <Dialog
         open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}
         fullWidth
@@ -1019,7 +1038,7 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
             justifyContent='space-between'
             alignItems='center'>
             <Typography variant='h6'>
-              {editedTask?.status === 'completed'
+              {editedTask?.status === 'Complete'
                 ? 'Task Completion Details'
                 : 'Edit Task'}
             </Typography>
@@ -1123,12 +1142,10 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
             onClick={handleEditTask}
             variant='contained'
             color='primary'>
-            {editedTask?.status === 'completed'
-              ? 'Save Changes'
-              : 'Update Task'}
+            {editedTask?.status === 'Complete' ? 'Save Changes' : 'Update Task'}
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
 
       {/* Snackbar for notifications */}
       <Snackbar

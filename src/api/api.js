@@ -208,6 +208,10 @@ export const getAssignedBookingMechanicApi = (id) =>
 export const assignMechanicToBookingApi = (id, data) =>
   Api.put(`/api/mechanics/${id}`, data, config);
 
-export const updateBookingStatusApi = (id, data) => {
-  return Api.put(`/api/booking/status/${id}`, data, config);
+export const updateBookingStatusApi = (data) => {
+  return Api.put(`/api/mechanics/update-status/${userID}`, data, config);
+};
+
+export const updateBookingStatusToCompletedApi = (data) => {
+  return Api.put(`/api/mechanics/mark-complete/${userID}`, data, config);
 };

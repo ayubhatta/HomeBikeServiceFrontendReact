@@ -209,7 +209,7 @@ const AdminBookings = () => {
               ? {
                   ...booking,
                   mechanicId: selectedMechanic.id,
-                  mechanicName: selectedMechanic.name,
+                  mechanicName: selectedMechanic.fullName,
                 }
               : booking
           );
@@ -309,7 +309,7 @@ const AdminBookings = () => {
                         <FaWrench className='tw-text-white' />
                       </div>
                       <div className='tw-flex-1'>
-                        <h3 className='tw-font-medium'>{mechanic.name}</h3>
+                        <h3 className='tw-font-medium'>{mechanic.fullName}</h3>
                         <div className='tw-flex tw-items-center tw-text-sm tw-text-gray-400'>
                           <FaPhoneAlt className='tw-mr-1 tw-text-xs' />
                           {mechanic.phoneNumber || 'N/A'}

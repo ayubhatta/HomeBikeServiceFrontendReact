@@ -7,4 +7,8 @@ export const Logo = [
     name: 'Honda',
     logo: '/assets/images/logo/Honda.png',
   },
+  {
+    name: 'Benelli',
+    logo: '/assets/images/logo/Benelli.png',
+  },
 ];
