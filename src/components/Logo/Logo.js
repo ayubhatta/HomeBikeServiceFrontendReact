@@ -13,7 +13,7 @@ export const Logo = [
   },
   {
     name: 'Triumph',
-    logo: '/assets/images/logo/Triumph.png',
+    logo: '/assets/images/logo/Triumph.jpeg',
   },
   {
     name: 'Crossfire',
