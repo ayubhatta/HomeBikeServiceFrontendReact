@@ -8,6 +8,8 @@ const CustomerDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
   const fetchUsers = useCallback(() => {
     setLoading(true);
@@ -25,19 +27,28 @@ const CustomerDashboard = () => {
         setLoading(false);
       });
   }, []);
-  // Function to update user role to Mechanic
-  const handleRoleUpdate = (id) => {
-    console.log('Updating user role to Mechanic:', id);
-    updateRoleToMechanicApi(id)
+
+  // Function to show confirmation dialog
+  const promptConfirmation = (id) => {
+    setSelectedUserId(id);
+    setShowConfirmation(true);
+  };
+
+  // Function to update user role to Mechanic after confirmation
+  const handleRoleUpdate = () => {
+    console.log('Updating user role to Mechanic:', selectedUserId);
+    updateRoleToMechanicApi(selectedUserId)
       .then((res) => {
         if (res.status === 200) {
           toast.success('User role updated successfully!');
           fetchUsers(); // Refresh the user list
+          setShowConfirmation(false); // Close confirmation dialog
         }
       })
       .catch((err) => {
         console.error('Error updating user role:', err);
         toast.error('Failed to update user role. Please try again.');
+        setShowConfirmation(false); // Close confirmation dialog
       });
   };
 
@@ -54,6 +65,30 @@ const CustomerDashboard = () => {
 
   return (
     <div className='tw-ml-0 lg:tw-ml-64 min-h-screen bg-gray-900 text-white tw-relative'>
+      {/* Confirmation Dialog */}
+      {showConfirmation && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+          <div className='bg-gray-800 p-6 rounded-lg shadow-lg max-w-md mx-auto'>
+            <h2 className='text-xl font-bold mb-4'>Confirm Role Change</h2>
+            <p className='mb-6'>
+              Are you sure you want to change this user's role to Mechanic?
+            </p>
+            <div className='flex justify-end space-x-4'>
+              <button
+                className='px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700'
+                onClick={() => setShowConfirmation(false)}>
+                Cancel
+              </button>
+              <button
+                className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700'
+                onClick={handleRoleUpdate}>
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className='bg-gray-800 p-6 rounded-lg shadow-md'>
         <div className='mb-6 flex justify-between items-center'>
           <h1 className='text-3xl font-bold'>User Dashboard</h1>
@@ -111,9 +146,9 @@ const CustomerDashboard = () => {
                     </td>
                     <td className='py-3 px-4'>
                       <button
-                        className='flex items-center'
-                        onClick={() => handleRoleUpdate(user.id)}>
-                        <FaEllipsisH className='mr-2 text-green-400' />
+                        className='flex items-center bg-green-600 hover:bg-green-700 text-white py-1 px-3 rounded'
+                        onClick={() => promptConfirmation(user.id)}>
+                        <FaEllipsisH className='mr-2' />
                         Change To Mechanic
                       </button>
                     </td>

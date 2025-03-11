@@ -44,15 +44,17 @@ export const forgotPasswordApi = (data) =>
 
 // Reset Password API
 export const resetPasswordApi = (data) =>
-  Api.post('/api/user/reset_password', data);
+  Api.post(`/api/user/changepassword/${userID}`, data);
+
+export const changePasswordApi = (data) =>
+  Api.post(`/api/user/changepassword/${userID}`, data);
 
 // Update Profile API
 export const updateProfileApi = (data) =>
-  Api.put('/api/user/update_profile', data, config);
+  Api.put(`/api/user/updateprofile/${userID}`, data);
 
 // Get current user API
-export const getCurrentUserApi = (id) =>
-  Api.get(`/api/user/current_profile`, config);
+export const getCurrentUserApi = () => Api.get(`/api/user/${userID}`, config);
 
 // Get all users API
 export const getAllUsersApi = () => Api.get('/api/user', config);
@@ -79,7 +81,7 @@ export const getSingleBike = (id) => Api.get(`api/bikeProducts/${id}`, config);
 
 // delete bike api
 export const deleteBikeApi = (id) =>
-  Api.delete(`api/bike/delete_bike/${id}`, config);
+  Api.delete(`api/bikeProducts/${id}`, config);
 
 // update bike api
 export const updateBikeApi = (id, data) =>
@@ -140,7 +142,7 @@ export const cancelBookingApi = (id) => {
 // ============================= Admin Panel ===========================================
 
 export const getDashboardStats = () =>
-  Api.get('/api/admin/dashboard_stats', config);
+  Api.get('/api/dashboard/total-counts', config);
 
 // ================================= Message API ===========================================
 export const sendMessageApi = (message) =>
@@ -200,10 +202,10 @@ export const deleteMechanicApi = (id) =>
   Api.delete(`/api/mechanic/delete/${id}`, config);
 
 export const getMechanicByIdApi = (id) =>
-  Api.get(`/api/mechanic/${id}`, config);
+  Api.get(`/api/mechanics/${id}`, config);
 
-export const getAssignedBookingMechanicApi = (id) =>
-  Api.get(`/api/mechanics/assigned/${id}`, config);
+export const getAssignedBookingMechanicApi = () =>
+  Api.get(`/api/mechanics/assigned/${userID}`, config);
 
 export const assignMechanicToBookingApi = (id, data) =>
   Api.put(`/api/mechanics/${id}`, data, config);
@@ -215,3 +217,9 @@ export const updateBookingStatusApi = (data) => {
 export const updateBookingStatusToCompletedApi = (data) => {
   return Api.put(`/api/mechanics/mark-complete/${userID}`, data, config);
 };
+
+export const updateMechanicProfileApi = (id, data) =>
+  Api.put(`/api/mechanics/updateprofile/${id}`, data, config);
+
+export const getMechanicProfileApi = () =>
+  Api.get(`/api/mechanics/${userID}`, config);

@@ -16,6 +16,7 @@ import MechanicList from './pages/admin/mechanic/MechanicList';
 import BookNow from './pages/bookNow/BookNow';
 import Bookings from './pages/bookings/Bookings';
 import Cart from './pages/cart/Cart';
+import ChangePassword from './pages/changePassword/ChangePassword';
 import ChooseModel from './pages/chooseModel/chooseModel';
 import ConfirmBooking from './pages/confirmBooking/ConfirmBooking';
 import ConfirmPayment from './pages/confirmPayment/ConfirmPayment';
@@ -24,6 +25,8 @@ import Homepage from './pages/dashboard/Homepage';
 import Login from './pages/login/login';
 import Marketplace from './pages/marketplace/Marketplace';
 import MechanicDashboard from './pages/mechanic/MechanicDashboard/MechanicDashboard';
+import MechanicTask from './pages/mechanic/MechanicTask/MechanicTask';
+import UserProfileUpdate from './pages/mechanic/UpdateMechanic/UpdateMechanic';
 import Register from './pages/register/register';
 import Search from './pages/search/Search';
 import ThankYouPage from './pages/thankyouForBooking/ThankyouPage';
@@ -110,6 +113,10 @@ function App() {
             path='/thankyou'
             element={<ThankYouPage />}
           />
+          <Route
+            path='/changePassword'
+            element={<ChangePassword />}
+          />
         </Route>
         {/* =========================== END USER ROUTE ============================ */}
         {/* =========================== ADMIN ROUTE ============================ */}
@@ -159,6 +166,14 @@ function App() {
           <Route
             path='/mechanic'
             element={<MechanicDashboard />}
+          />
+          <Route
+            path='/mechanic/tasks'
+            element={<MechanicTask />}
+          />
+          <Route
+            path='/mechanic/profile'
+            element={<UserProfileUpdate />}
           />
         </Route>
       </Routes>

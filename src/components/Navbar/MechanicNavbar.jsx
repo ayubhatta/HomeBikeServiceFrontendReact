@@ -80,6 +80,15 @@ export const SidebarComponent = ({ drawerOpen, handleDrawerClose }) => {
 
 // Shared content for both sidebars
 export const SidebarContent = ({ onItemClick }) => {
+  const handleDashboardClick = () => {
+    window.location.href = '/mechanic';
+  };
+  const handleTaskClick = () => {
+    window.location.href = '/mechanic/tasks';
+  };
+  const handleProfileClick = () => {
+    window.location.href = '/mechanic/profile';
+  };
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = '/login';
@@ -90,7 +99,7 @@ export const SidebarContent = ({ onItemClick }) => {
       <ListItem
         button
         selected
-        onClick={onItemClick}>
+        onClick={handleDashboardClick}>
         <ListItemIcon>
           <DashboardIcon />
         </ListItemIcon>
@@ -98,7 +107,7 @@ export const SidebarContent = ({ onItemClick }) => {
       </ListItem>
       <ListItem
         button
-        onClick={onItemClick}>
+        onClick={handleTaskClick}>
         <ListItemIcon>
           <AssignmentIcon />
         </ListItemIcon>
@@ -106,7 +115,7 @@ export const SidebarContent = ({ onItemClick }) => {
       </ListItem>
       <ListItem
         button
-        onClick={onItemClick}>
+        onClick={handleProfileClick}>
         <ListItemIcon>
           <PersonIcon />
         </ListItemIcon>

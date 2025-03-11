@@ -14,6 +14,7 @@ const BikeDashboard = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [bikes, setBikes] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchBikes = useCallback(() => {
     getAllBikeApi()
@@ -63,6 +64,8 @@ const BikeDashboard = () => {
     e.preventDefault();
     if (!validate()) return;
 
+    setIsLoading(true);
+
     const formData = new FormData();
     Object.entries(bikeData).forEach(([key, value]) =>
       formData.append(key, value)
@@ -81,6 +84,9 @@ const BikeDashboard = () => {
         const errorMessage =
           err.response?.data?.message || 'Something went wrong';
         toast.error(errorMessage);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
@@ -194,7 +200,7 @@ const BikeDashboard = () => {
                 <label className='block text-gray-300 mb-1'>Image</label>
                 <input
                   type='file'
-                  accept="image/*"
+                  accept='image/*'
                   onChange={handleImageChange}
                   className='w-full p-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500'
                 />
@@ -204,22 +210,21 @@ const BikeDashboard = () => {
                   </p>
                 )}
                 {previewImage && (
-                  <div className="mt-3 relative">
-                    <div className="relative w-full aspect-video bg-gray-700 rounded overflow-hidden flex items-center justify-center">
+                  <div className='mt-3 relative'>
+                    <div className='relative w-full aspect-video bg-gray-700 rounded overflow-hidden flex items-center justify-center'>
                       <img
                         src={previewImage}
-                        alt="Preview"
-                        className="max-w-full max-h-full object-contain"
+                        alt='Preview'
+                        className='max-w-full max-h-full object-fit'
                       />
                     </div>
                     <button
-                      type="button"
+                      type='button'
                       onClick={() => {
                         setPreviewImage(null);
-                        setBikeData(prev => ({ ...prev, bikeImage: null }));
+                        setBikeData((prev) => ({ ...prev, bikeImage: null }));
                       }}
-                      className="absolute top-2 right-2 bg-red-500 rounded-full w-6 h-6 flex items-center justify-center text-white hover:bg-red-600"
-                    >
+                      className='absolute top-2 right-2 bg-red-500 rounded-full w-6 h-6 flex items-center justify-center text-white hover:bg-red-600'>
                       ×
                     </button>
                   </div>
@@ -232,19 +237,39 @@ const BikeDashboard = () => {
                     setIsModalOpen(false);
                     resetForm();
                   }}
-                  className='bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300'>
+                  className='bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300'
+                  disabled={isLoading}>
                   Cancel
                 </button>
                 <button
                   type='submit'
-                  className='bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300'>
-                  Add Bike
+                  disabled={isLoading}
+                  className='bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300 flex items-center justify-center min-w-[80px]'>
+                  {isLoading ? (
+                    <div className='spinner w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                  ) : (
+                    'Add Bike'
+                  )}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      <style jsx>{`
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+        .animate-spin {
+          animation: spin 1s linear infinite;
+        }
+      `}</style>
     </div>
   );
 };

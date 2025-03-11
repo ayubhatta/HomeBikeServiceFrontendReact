@@ -51,13 +51,12 @@ const ConfirmBooking = () => {
   const handleSubmit = (e) => {
     console.log(userID);
     e.preventDefault();
-    const extraCharge = 200;
 
     const data = {
       ...formData,
       userId: userID,
       bikeId: params.id,
-      total: total + extraCharge,
+      total: total,
     };
 
     setLoading(true);
@@ -180,9 +179,7 @@ const ConfirmBooking = () => {
 
             <div className='mt-4 flex justify-between border-t border-gray-200 pt-4'>
               <p className='text-base font-medium text-gray-900'>Total:</p>
-              <p className='text-base font-bold text-blue-600'>
-                ${total}
-              </p>
+              <p className='text-base font-bold text-blue-600'>${total}</p>
             </div>
           </div>
         </div>

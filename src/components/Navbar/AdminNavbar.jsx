@@ -6,7 +6,9 @@ import {
   faMotorcycle,
   faSignOutAlt,
   faTimes,
+  faTools,
   faUser,
+  faWrench,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
@@ -45,8 +47,9 @@ const AdminNavbar = () => {
   const menuItems = [
     { path: '/admin/dashboard', name: 'Dashboard', icon: faHome },
     { path: '/admin/customerDashboard', name: 'Customer', icon: faUser },
+    { path: '/admin/mechanic', name: 'Mechanic', icon: faWrench },
     { path: '/admin/dashboard/bike', name: 'Bike', icon: faMotorcycle },
-    { path: '/admin/parts', name: 'Parts', icon: faMotorcycle },
+    { path: '/admin/parts', name: 'Parts', icon: faTools },
 
     { path: '/admin/bookings', name: 'Booking', icon: faCalendarAlt },
     { path: '/admin/feedback', name: 'Feedback', icon: faCommentDots },

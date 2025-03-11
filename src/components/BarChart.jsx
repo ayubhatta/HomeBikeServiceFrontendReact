@@ -21,20 +21,27 @@ ChartJS.register(
 
 const BarChart = ({ data }) => {
   const chartData = {
-    labels: ['Total User', 'Total Bikes', 'Total Bookings'],
+    labels: ['Total User', 'Total Bikes', 'Total Bookings', 'Total Parts'],
     datasets: [
       {
         label: 'Statistics',
-        data: [data.totalUserLogins, data.totalBikesAdded, data.totalBookings],
+        data: [
+          data.totalUsers,
+          data.totalBikeProducts,
+          data.totalBookings,
+          data.totalBikeParts,
+        ],
         backgroundColor: [
           'rgba(75, 192, 192, 0.5)',
           'rgba(153, 102, 255, 0.5)',
           'rgba(255, 159, 64, 0.5)',
+          'rgb(0, 170, 255)',
         ],
         borderColor: [
           'rgba(75, 192, 192, 1)',
           'rgba(153, 102, 255, 1)',
           'rgba(255, 159, 64, 1)',
+          'rgb(0, 170, 255)',
         ],
         borderWidth: 2,
       },

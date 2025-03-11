@@ -28,7 +28,7 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import {
-  getAssignedBookingMechanicApi,
+  getMechanicByIdApi,
   updateBookingStatusApi,
   updateBookingStatusToCompletedApi,
   userID,
@@ -51,9 +51,6 @@ function MechanicDashboard() {
   });
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editedTask, setEditedTask] = useState(null);
-  const [cartDialogOpen, setCartDialogOpen] = useState(false);
 
   /**
    * Maps API response data to the task format required by the MechanicDashboard component
@@ -78,20 +75,6 @@ function MechanicDashboard() {
       } catch (e) {
         return timeString;
       }
-    };
-
-    // Format cart items to display parts information
-    const formatCartItems = () => {
-      if (!user.cart || !Array.isArray(user.cart) || user.cart.length === 0) {
-        return 'No parts requested';
-      }
-
-      return user.cart
-        .map((item) => {
-          const part = item.cartDetails;
-          return `${part.partName} (${item.quantity}x) - $${part.price} each`;
-        })
-        .join('\n');
     };
 
     // Calculate total cost of parts
@@ -168,7 +151,7 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
       // Assuming you have the mechanic ID from auth or context
       const mechanicId = userID;
 
-      const response = await getAssignedBookingMechanicApi(mechanicId);
+      const response = await getMechanicByIdApi(mechanicId);
 
       // Set tasks from API response
       if (response && response.data) {
@@ -253,7 +236,7 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
     setDrawerOpen(false);
   };
 
-  const handleStatusChange = async (taskId, newStatus, mechanicId) => {
+  const handleStatusChange = async (taskId, newStatus) => {
     try {
       let apiResponse;
       console.log('Task ID:', taskId);
@@ -301,8 +284,6 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
         // If changing to complete, open the edit dialog
         if (newStatus === 'Complete') {
           const task = tasks.find((t) => t.id === taskId);
-          setEditedTask({ ...task, status: newStatus });
-          setEditDialogOpen(true);
         }
       } else {
         throw new Error('API request failed');
@@ -312,40 +293,6 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
       setSnackbar({
         open: true,
         message: 'Failed to update task status',
-        severity: 'error',
-      });
-    }
-  };
-
-  const handleEditTask = async () => {
-    try {
-      // Here you could add API call to update task details
-      // For example: await updateTaskApi(editedTask);
-
-      const updatedTasks = tasks.map((task) =>
-        task.id === editedTask.id ? editedTask : task
-      );
-
-      setTasks(updatedTasks);
-
-      // Update selected task if it's the one being edited
-      if (selectedTask && selectedTask.id === editedTask.id) {
-        setSelectedTask(editedTask);
-      }
-
-      setEditDialogOpen(false);
-
-      // Show success message
-      setSnackbar({
-        open: true,
-        message: 'Task updated successfully',
-        severity: 'success',
-      });
-    } catch (err) {
-      console.error('Error updating task:', err);
-      setSnackbar({
-        open: true,
-        message: 'Failed to update task',
         severity: 'error',
       });
     }
@@ -364,7 +311,6 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
 
   const openCartDialog = (task) => {
     setSelectedTask(task);
-    setCartDialogOpen(true);
   };
 
   const getStatusIcon = (status) => {
@@ -642,8 +588,6 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
                             variant='outlined'
                             onClick={(e) => {
                               e.stopPropagation();
-                              setEditedTask({ ...task });
-                              setEditDialogOpen(true);
                             }}>
                             View Details
                           </Button>
@@ -980,29 +924,6 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
                       Complete Task
                     </Button>
                   )}
-
-                  {/* {selectedTask.status === 'Complete' && (
-                    <Button
-                      variant='outlined'
-                      sx={{ mt: 3 }}
-                      onClick={() => {
-                        setEditedTask({ ...selectedTask });
-                        setEditDialogOpen(true);
-                      }}>
-                      Edit Details
-                    </Button>
-                  )}
-
-                  {selectedTask.hasParts && (
-                    <Button
-                      variant='outlined'
-                      color='primary'
-                      startIcon={<ShoppingCartIcon />}
-                      sx={{ mt: 3, ml: 2 }}
-                      onClick={() => openCartDialog(selectedTask)}>
-                      View Parts
-                    </Button>
-                  )} */}
                 </>
               ) : (
                 <Box
@@ -1025,127 +946,6 @@ Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
           </Grid>
         </Grid>
       </Box>
-
-      {/* Edit Task Dialog */}
-      {/* <Dialog
-        open={editDialogOpen}
-        onClose={() => setEditDialogOpen(false)}
-        fullWidth
-        maxWidth='md'>
-        <DialogTitle>
-          <Box
-            display='flex'
-            justifyContent='space-between'
-            alignItems='center'>
-            <Typography variant='h6'>
-              {editedTask?.status === 'Complete'
-                ? 'Task Completion Details'
-                : 'Edit Task'}
-            </Typography>
-            <IconButton onClick={() => setEditDialogOpen(false)}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent dividers>
-          {editedTask && (
-            <Grid
-              container
-              spacing={3}>
-              <Grid
-                item
-                xs={12}>
-                <TextField
-                  label='Task Title'
-                  fullWidth
-                  value={editedTask.title || editedTask.serviceType || ''}
-                  onChange={(e) =>
-                    setEditedTask({ ...editedTask, title: e.target.value })
-                  }
-                  margin='normal'
-                />
-              </Grid>
-              <Grid
-                item
-                xs={12}>
-                <TextField
-                  label='Description'
-                  fullWidth
-                  multiline
-                  rows={2}
-                  value={editedTask.description || ''}
-                  onChange={(e) =>
-                    setEditedTask({
-                      ...editedTask,
-                      description: e.target.value,
-                    })
-                  }
-                  margin='normal'
-                />
-              </Grid>
-              <Grid
-                item
-                xs={12}
-                sm={6}>
-                <TextField
-                  label='Vehicle'
-                  fullWidth
-                  value={editedTask.vehicleDetails || editedTask.vehicle || ''}
-                  onChange={(e) =>
-                    setEditedTask({
-                      ...editedTask,
-                      vehicleDetails: e.target.value,
-                    })
-                  }
-                  margin='normal'
-                />
-              </Grid>
-              <Grid
-                item
-                xs={12}
-                sm={6}>
-                <TextField
-                  label='Customer'
-                  fullWidth
-                  value={editedTask.customerName || editedTask.customer || ''}
-                  onChange={(e) =>
-                    setEditedTask({
-                      ...editedTask,
-                      customerName: e.target.value,
-                    })
-                  }
-                  margin='normal'
-                />
-              </Grid>
-              <Grid
-                item
-                xs={12}>
-                <TextField
-                  label='Notes'
-                  fullWidth
-                  multiline
-                  rows={4}
-                  value={editedTask.notes || ''}
-                  onChange={(e) =>
-                    setEditedTask({ ...editedTask, notes: e.target.value })
-                  }
-                  margin='normal'
-                  placeholder='Add details about the work performed, parts used, or any issues found'
-                />
-              </Grid>
-            </Grid>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-          <Button
-            onClick={handleEditTask}
-            variant='contained'
-            color='primary'>
-            {editedTask?.status === 'Complete' ? 'Save Changes' : 'Update Task'}
-          </Button>
-        </DialogActions>
-      </Dialog> */}
 
       {/* Snackbar for notifications */}
       <Snackbar

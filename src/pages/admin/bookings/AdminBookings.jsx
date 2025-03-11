@@ -186,6 +186,7 @@ const AdminBookings = () => {
 
   const handleMechanicSelect = (mechanic) => {
     setSelectedMechanic(mechanic);
+    console.log('Selected mechanic:', mechanic);
   };
 
   const assignMechanic = () => {
@@ -196,9 +197,10 @@ const AdminBookings = () => {
 
     setAssigningMechanic(true);
     const data = {
-      isAssignedTo: 5,
+      isAssignedTo: [selectedBookingId],
     };
-    assignMechanicToBookingApi(selectedMechanic.id, data)
+    const id = selectedMechanic.mechanicId;
+    assignMechanicToBookingApi(id, data)
       .then((res) => {
         if (res.status === 200) {
           toast.success('Mechanic assigned successfully');
@@ -210,6 +212,7 @@ const AdminBookings = () => {
                   ...booking,
                   mechanicId: selectedMechanic.id,
                   mechanicName: selectedMechanic.fullName,
+                  mechanicDetails: selectedMechanic, // Add mechanic details
                 }
               : booking
           );
@@ -222,10 +225,15 @@ const AdminBookings = () => {
         setAssigningMechanic(false);
       })
       .catch((err) => {
-        console.log(err);
-        toast.error('Error assigning mechanic. Please try again.');
+        console.log(err.response.data.message);
+        toast.error(err.response.data.message);
         setAssigningMechanic(false);
       });
+  };
+
+  // Check if booking status is canceled
+  const isBookingCanceled = (status) => {
+    return status?.toLowerCase() === 'canceled';
   };
 
   const statuses = ['all', 'pending', 'complete', 'canceled'];
@@ -314,6 +322,13 @@ const AdminBookings = () => {
                           <FaPhoneAlt className='tw-mr-1 tw-text-xs' />
                           {mechanic.phoneNumber || 'N/A'}
                         </div>
+                        {/* Display mechanic's email if available */}
+                        {mechanic.email && (
+                          <div className='tw-flex tw-items-center tw-text-sm tw-text-gray-400'>
+                            <FaEnvelope className='tw-mr-1 tw-text-xs' />
+                            {mechanic.email}
+                          </div>
+                        )}
                       </div>
                       <div className='tw-w-6 tw-h-6 tw-rounded-full tw-border tw-border-gray-500 tw-flex tw-items-center tw-justify-center'>
                         {selectedMechanic?.id === mechanic.id && (
@@ -661,48 +676,13 @@ const AdminBookings = () => {
 
                     {/* Actions */}
                     <div className='tw-flex tw-gap-2 tw-flex-wrap tw-mt-4'>
-                      {!booking.mechanicId && (
+                      {!booking.mechanicId && booking.status !== 'canceled' && (
                         <button
                           onClick={() => openMechanicModal(booking.id)}
                           className='tw-bg-purple-600 hover:tw-bg-purple-700 tw-text-white tw-font-bold tw-py-2 tw-px-4 tw-rounded tw-flex tw-items-center tw-transition-colors'>
                           <FaWrench className='tw-mr-2' /> Assign Mechanic
                         </button>
                       )}
-                      <button className='tw-bg-green-600 hover:tw-bg-green-700 tw-text-white tw-font-bold tw-py-2 tw-px-4 tw-rounded tw-flex tw-items-center tw-transition-colors'>
-                        <svg
-                          className='tw-w-4 tw-h-4 tw-mr-2'
-                          fill='none'
-                          stroke='currentColor'
-                          viewBox='0 0 24 24'
-                          xmlns='http://www.w3.org/2000/svg'>
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth='2'
-                            d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'></path>
-                        </svg>
-                        Update Status
-                      </button>
-                      <button className='tw-bg-blue-600 hover:tw-bg-blue-700 tw-text-white tw-font-bold tw-py-2 tw-px-4 tw-rounded tw-flex tw-items-center tw-transition-colors'>
-                        <svg
-                          className='tw-w-4 tw-h-4 tw-mr-2'
-                          fill='none'
-                          stroke='currentColor'
-                          viewBox='0 0 24 24'
-                          xmlns='http://www.w3.org/2000/svg'>
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth='2'
-                            d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'></path>
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth='2'
-                            d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'></path>
-                        </svg>
-                        View Complete Details
-                      </button>
                     </div>
                   </motion.div>
                 )}
@@ -812,13 +792,14 @@ const AdminBookings = () => {
                     </td>
                     <td className='tw-px-6 tw-py-4 tw-whitespace-nowrap tw-text-right tw-text-sm tw-font-medium'>
                       <div className='tw-flex tw-justify-end tw-space-x-2'>
-                        {!booking.mechanicId && (
-                          <button
-                            onClick={() => openMechanicModal(booking.id)}
-                            className='tw-text-purple-500 hover:tw-text-purple-400 tw-transition-colors'>
-                            Assign
-                          </button>
-                        )}
+                        {!booking.mechanicId &&
+                          booking.status !== 'canceled' && (
+                            <button
+                              onClick={() => openMechanicModal(booking.id)}
+                              className='tw-text-purple-500 hover:tw-text-purple-400 tw-transition-colors'>
+                              Assign
+                            </button>
+                          )}
                       </div>
                     </td>
                   </tr>

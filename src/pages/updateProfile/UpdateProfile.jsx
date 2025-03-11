@@ -12,16 +12,24 @@ const UpdateProfile = () => {
     phoneNumber: '',
   });
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [responseData, setResponseData] = useState(null);
+
+  // Primary blue color
+  const primaryBlue = '#1a73e8';
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const response = await getCurrentUserApi(id);
-        const { user } = response.data;
+        const user = response.data;
+
+        // Store complete response for display
+
         setUserData({
-          fullName: user.fullName,
-          email: user.email,
-          phoneNumber: user.phoneNumber,
+          fullName: user?.fullName || '',
+          email: user?.email || '',
+          phoneNumber: user?.phoneNumber || '',
         });
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -44,7 +52,7 @@ const UpdateProfile = () => {
 
   const saveChanges = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSubmitting(true);
     try {
       const formData = new FormData();
       formData.append('fullName', userData.fullName);
@@ -52,6 +60,7 @@ const UpdateProfile = () => {
       formData.append('phoneNumber', userData.phoneNumber);
 
       const response = await updateProfileApi(formData);
+
       if (response.status === 200) {
         toast.success('Profile updated successfully');
       }
@@ -63,20 +72,22 @@ const UpdateProfile = () => {
         toast.error('Failed to update user profile');
       }
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   if (loading) {
     return (
-      <div className='min-h-screen flex items-center justify-center bg-gray-100'>
-        <div className='animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-indigo-500'></div>
+      <div className='min-h-screen flex items-center justify-center bg-gray-50'>
+        <div
+          className='animate-spin rounded-full h-16 w-16 border-t-4 border-b-4'
+          style={{ borderColor: primaryBlue }}></div>
       </div>
     );
   }
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-indigo-600'>
+    <div className='min-h-screen flex flex-col items-center justify-center bg-gray-50'>
       <ToastContainer
         position='top-right'
         autoClose={3000}
@@ -88,8 +99,12 @@ const UpdateProfile = () => {
         draggable
         pauseOnHover
       />
-      <div className='bg-white p-8 rounded-lg shadow-2xl w-full max-w-md transform transition-all hover:scale-105'>
-        <h2 className='text-3xl font-extrabold mb-8 text-center text-gray-800'>
+      <div
+        className='bg-white p-8 rounded-xl shadow-lg w-full max-w-md transform transition-all hover:shadow-xl'
+        style={{ borderTop: `4px solid ${primaryBlue}` }}>
+        <h2
+          className='text-3xl font-bold mb-6 text-center'
+          style={{ color: primaryBlue }}>
           Update Profile
         </h2>
         <form
@@ -108,8 +123,12 @@ const UpdateProfile = () => {
               value={userData.fullName}
               onChange={handleInputChange}
               required
-              className='mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400
-                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500'
+              className='mt-1 block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm shadow-sm placeholder-gray-400
+                focus:outline-none focus:ring-2'
+              style={{
+                focusBorderColor: primaryBlue,
+                focusRingColor: `${primaryBlue}33`,
+              }}
             />
           </div>
           <div>
@@ -125,8 +144,12 @@ const UpdateProfile = () => {
               value={userData.email}
               onChange={handleInputChange}
               required
-              className='mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400
-                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500'
+              className='mt-1 block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm shadow-sm placeholder-gray-400
+                focus:outline-none focus:ring-2'
+              style={{
+                focusBorderColor: primaryBlue,
+                focusRingColor: `${primaryBlue}33`,
+              }}
             />
           </div>
           <div>
@@ -142,33 +165,48 @@ const UpdateProfile = () => {
               value={userData.phoneNumber}
               onChange={handleInputChange}
               required
-              className='mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400
-                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500'
+              className='mt-1 block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm shadow-sm placeholder-gray-400
+                focus:outline-none focus:ring-2'
+              style={{
+                focusBorderColor: primaryBlue,
+                focusRingColor: `${primaryBlue}33`,
+              }}
             />
           </div>
-          <button
-            type='submit'
-            className='w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300'>
-            {loading ? (
-              <svg
-                className='animate-spin h-5 w-5 mr-3'
-                viewBox='0 0 24 24'>
-                <circle
-                  className='opacity-25'
-                  cx='12'
-                  cy='12'
-                  r='10'
-                  stroke='currentColor'
-                  strokeWidth='4'></circle>
-                <path
-                  className='opacity-75'
-                  fill='currentColor'
-                  d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
-              </svg>
-            ) : (
-              'Save Changes'
-            )}
-          </button>
+          <div className='flex flex-col gap-4'>
+            <button
+              type='submit'
+              disabled={isSubmitting}
+              className='w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white transition-colors duration-300'
+              style={{
+                backgroundColor: primaryBlue,
+                opacity: isSubmitting ? 0.7 : 1,
+                hover: { backgroundColor: '#1557b5' },
+              }}>
+              {isSubmitting ? (
+                <div className='flex items-center'>
+                  <svg
+                    className='animate-spin h-5 w-5 mr-3'
+                    viewBox='0 0 24 24'>
+                    <circle
+                      className='opacity-25'
+                      cx='12'
+                      cy='12'
+                      r='10'
+                      stroke='currentColor'
+                      strokeWidth='4'></circle>
+                    <path
+                      className='opacity-75'
+                      fill='currentColor'
+                      d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
+                  </svg>
+                  Saving...
+                </div>
+              ) : (
+                'Save Changes'
+              )}
+            </button>
+          </div>
         </form>
       </div>
     </div>

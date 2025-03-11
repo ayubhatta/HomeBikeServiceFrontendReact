@@ -8,7 +8,11 @@ import {
 } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { getAllBikeApi, getAllUsersApi } from '../../../api/api';
+import {
+  getAllBikeApi,
+  getAllUsersApi,
+  getDashboardStats,
+} from '../../../api/api';
 import BarChart from '../../../components/BarChart';
 import PieChart from '../../../components/PieChart.jsx';
 
@@ -16,23 +20,23 @@ const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [bikes, setBikes] = useState([]);
   const [stats, setStats] = useState({
-    totalUserLogins: 0,
-    totalBikesAdded: 0,
+    totalUsers: 0,
+    totalBikeProducts: 0,
     totalBookings: 0,
+    totalBikeParts: 0,
   });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    Promise.all([getAllUsersApi(), getAllBikeApi()])
+    Promise.all([getAllUsersApi(), getAllBikeApi(), getDashboardStats()])
       .then(([usersRes, bikesRes, statsRes]) => {
         if (usersRes.status === 200) setUsers(usersRes.data);
         if (bikesRes.status === 200) setBikes(bikesRes.data.bikes);
-        // if (statsRes.status === 200) setStats(statsRes.data);
+        if (statsRes.status === 200) setStats(statsRes.data.totalCount);
         setLoading(false);
-        console.log(usersRes.data); // For debugging
-        console.log(bikesRes.data); // For debugging
-        // console.log(statsRes.data); // For debugging
+
+        console.log(statsRes.data.totalCount); // For debugging
       })
       .catch((err) => {
         console.error(err);

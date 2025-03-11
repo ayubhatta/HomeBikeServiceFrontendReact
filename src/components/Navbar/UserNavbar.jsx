@@ -1,12 +1,6 @@
 import { motion } from 'framer-motion';
 import React, { useState } from 'react';
-import {
-  FaBars,
-  FaSearch,
-  FaShoppingCart,
-  FaTimes,
-  FaUser,
-} from 'react-icons/fa';
+import { FaBars, FaShoppingCart, FaTimes, FaUser } from 'react-icons/fa';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 
 const UserNavbar = () => {
@@ -85,13 +79,6 @@ const UserNavbar = () => {
             </div>
 
             <div className='flex items-center space-x-4'>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleSearchClick}
-                className='text-white hover:text-blue-200 transition duration-300 bg-blue-700 hover:bg-blue-600 p-2 rounded-full'>
-                <FaSearch className='h-5 w-5' />
-              </motion.button>
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
@@ -204,15 +191,6 @@ const UserNavbar = () => {
                     : 'block px-3 py-2 rounded-md text-white hover:bg-blue-500 hover:text-white transition duration-300'
                 }>
                 Contact Us
-              </NavLink>
-              <NavLink
-                to='/search'
-                className={({ isActive }) =>
-                  isActive
-                    ? 'block px-3 py-2 rounded-md text-white bg-blue-800 font-medium'
-                    : 'block px-3 py-2 rounded-md text-white hover:bg-blue-500 hover:text-white transition duration-300'
-                }>
-                Search
               </NavLink>
             </div>
           </motion.div>

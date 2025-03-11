@@ -1,25 +1,232 @@
+import {
+  AccessTime,
+  CalendarMonth,
+  CurrencyRupee,
+  DeleteOutline,
+  Payment,
+  ShoppingCart,
+  TwoWheeler,
+} from '@mui/icons-material';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardMedia,
+  CircularProgress,
+  Container,
+  createTheme,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Grid,
+  IconButton,
+  Paper,
+  Snackbar,
+  ThemeProvider,
+  Typography,
+} from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
-import {
-  FaCalendarAlt,
-  FaClock,
-  FaDollarSign,
-  FaMotorcycle,
-  FaTrashAlt,
-} from 'react-icons/fa';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import {
   deleteCartItemApi,
   getCartApi,
   initializeKhaltiPaymentApi,
 } from '../../api/api';
 
+// Create a custom theme with blue as primary color
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+      light: '#4791db',
+      dark: '#115293',
+    },
+    secondary: {
+      main: '#f50057',
+    },
+    background: {
+      default: '#f5f8fd',
+    },
+  },
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    h4: {
+      fontWeight: 700,
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          textTransform: 'none',
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
+          transition: 'transform 0.2s, box-shadow 0.2s',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 12px 28px rgba(0, 0, 0, 0.12)',
+          },
+        },
+      },
+    },
+  },
+});
+
+const CartItem = ({ item, onView, onRemove }) => {
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}>
+      <Card sx={{ mb: 3, overflow: 'hidden' }}>
+        <Grid container>
+          <Grid
+            item
+            xs={12}
+            md={3}>
+            <CardMedia
+              component='img'
+              height='160'
+              image={item.bikePartDetails.imageUrl}
+              alt={item.bikePartDetails.partName}
+              sx={{ objectFit: 'cover' }}
+            />
+          </Grid>
+          <Grid
+            item
+            xs={12}
+            md={9}>
+            <CardContent sx={{ height: '100%', p: 3 }}>
+              <Typography
+                variant='h6'
+                color='primary'
+                gutterBottom
+                sx={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
+                {item.bikePartDetails.partName}
+              </Typography>
+
+              <Grid
+                container
+                spacing={2}
+                sx={{ mt: 1 }}>
+                <Grid
+                  item
+                  xs={12}
+                  sm={6}
+                  display='flex'
+                  alignItems='center'>
+                  <CalendarMonth
+                    fontSize='small'
+                    color='action'
+                    sx={{ mr: 1 }}
+                  />
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'>
+                    {new Date(item.dateAdded).toLocaleDateString()}
+                  </Typography>
+                </Grid>
+                <Grid
+                  item
+                  xs={12}
+                  sm={6}
+                  display='flex'
+                  alignItems='center'>
+                  <AccessTime
+                    fontSize='small'
+                    color='action'
+                    sx={{ mr: 1 }}
+                  />
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'>
+                    {new Date(item.dateAdded).toLocaleTimeString()}
+                  </Typography>
+                </Grid>
+              </Grid>
+
+              <Box
+                display='flex'
+                alignItems='center'
+                sx={{ mt: 1.5 }}>
+                <Typography
+                  variant='body1'
+                  color='text.secondary'
+                  fontWeight={500}
+                  sx={{ mr: 1 }}>
+                  Quantity:
+                </Typography>
+                <Typography variant='body1'>{item.quantity}</Typography>
+              </Box>
+
+              <Box
+                display='flex'
+                justifyContent='space-between'
+                alignItems='center'
+                sx={{ mt: 2 }}>
+                <Box
+                  display='flex'
+                  alignItems='center'>
+                  <CurrencyRupee
+                    fontSize='small'
+                    color='primary'
+                  />
+                  <Typography
+                    variant='h6'
+                    color='text.primary'
+                    fontWeight='bold'>
+                    {item.totalPrice.toFixed(2)}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    size='medium'
+                    onClick={() => onView(item)}
+                    sx={{ mr: 1.5 }}>
+                    View Details
+                  </Button>
+                  <IconButton
+                    color='error'
+                    onClick={() => onRemove(item.id)}
+                    aria-label='Remove from cart'>
+                    <DeleteOutline />
+                  </IconButton>
+                </Box>
+              </Box>
+            </CardContent>
+          </Grid>
+        </Grid>
+      </Card>
+    </motion.div>
+  );
+};
+
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   useEffect(() => {
     getCartApi()
@@ -56,13 +263,17 @@ const Cart = () => {
         const paymentUrl = paymentResponse.data.payment.payment_url;
         window.location.href = paymentUrl;
       } else {
-        toast.error('Failed to initialize payment. Please try again.');
+        showSnackbar(
+          'Failed to initialize payment. Please try again.',
+          'error'
+        );
       }
     } catch (error) {
       console.error('Error processing payment:', error);
-      toast.error(
+      showSnackbar(
         'Error processing payment: ' +
-          (error.response?.data?.message || error.message || 'Unknown error')
+          (error.response?.data?.message || error.message || 'Unknown error'),
+        'error'
       );
     }
   };
@@ -74,191 +285,333 @@ const Cart = () => {
           setCartItems((prevItems) =>
             prevItems.filter((item) => item.id !== itemId)
           );
-          toast.success('Item removed from cart successfully');
+          showSnackbar('Item removed from cart successfully', 'success');
         } else {
-          toast.error('Failed to remove item from cart');
+          showSnackbar('Failed to remove item from cart', 'error');
         }
       })
       .catch((err) => {
-        toast.error('Failed to remove item from cart');
+        showSnackbar('Failed to remove item from cart', 'error');
         console.error(err);
       });
   };
 
-  const CartItemCard = ({ item }) => (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 50 }}
-      whileHover={{ scale: 1.02 }}
-      className='bg-white rounded-lg shadow-lg overflow-hidden mb-6'>
-      <div className='md:flex'>
-        <div className='md:flex-shrink-0'>
-          <img
-            className='h-40 w-full object-cover md:w-40'
-            src={item.bikePartDetails.imageUrl}
-            alt='Bike Part'
-          />
-        </div>
-        <div className='p-8 w-full'>
-          <div className='uppercase tracking-wide text-sm text-indigo-500 font-semibold'>
-            {item.bikePartDetails.partName}
-          </div>
-          <div className='mt-2 flex flex-wrap justify-between items-center'>
-            <div className='flex items-center text-gray-600 mr-8'>
-              <FaCalendarAlt className='mr-2' />
-              <span>{new Date(item.dateAdded).toLocaleDateString()}</span>
-            </div>
-            <div className='flex items-center text-gray-600'>
-              <FaClock className='mr-2' />
-              <span>{new Date(item.dateAdded).toLocaleTimeString()}</span>
-            </div>
-          </div>
-          <div className='mt-2 flex items-center text-gray-600'>
-            <span className='mr-2 font-medium'>Quantity:</span>
-            <span>{item.quantity}</span>
-          </div>
-          <div className='mt-4 flex justify-between items-center'>
-            <span className='text-2xl font-bold text-gray-900'>
-              Rs {item.totalPrice.toFixed(2)}
-            </span>
-            <div className='flex items-center'>
-              <button
-                onClick={() => setSelectedItem(item)}
-                className='px-4 py-2 mr-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'>
-                View Details
-              </button>
-              <button
-                onClick={() => handleRemoveFromCart(item.id)}
-                className='p-2 text-red-600 hover:text-red-800 focus:outline-none'
-                title='Remove from Cart'>
-                <FaTrashAlt size={20} />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
+  const showSnackbar = (message, severity) => {
+    setSnackbar({ open: true, message, severity });
+  };
 
-  const ItemDetails = ({ item, onClose }) => (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className='fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center'>
-      <motion.div
-        initial={{ scale: 0.9 }}
-        animate={{ scale: 1 }}
-        exit={{ scale: 0.9 }}
-        className='bg-white p-8 rounded-lg shadow-xl max-w-md w-full'>
-        <h2 className='text-2xl font-bold mb-4'>
-          {item.bikePartDetails.partName}
-        </h2>
-        <img
-          className='h-40 w-full object-cover rounded-lg mb-4'
-          src={item.bikePartDetails.imageUrl}
-          alt='Bike Part'
-        />
-        <div className='mb-4'>
-          <div className='flex items-center mb-2'>
-            <FaCalendarAlt className='mr-2 text-indigo-600' />
-            <span>Added: {new Date(item.dateAdded).toLocaleDateString()}</span>
-          </div>
-          <div className='flex items-center mb-2'>
-            <FaClock className='mr-2 text-indigo-600' />
-            <span>Time: {new Date(item.dateAdded).toLocaleTimeString()}</span>
-          </div>
-          <div className='flex items-center mb-2'>
-            <FaMotorcycle className='mr-2 text-indigo-600' />
-            <span>Quantity: {item.quantity}</span>
-          </div>
-          <div className='flex items-center'>
-            <FaDollarSign className='mr-2 text-indigo-600' />
-            <span className='text-xl font-bold'>
-              Rs {item.totalPrice.toFixed(2)}
-            </span>
-          </div>
-          <div className='mt-2 text-sm text-gray-500'>
-            <p>Payment Status: {item.isPaymentDone ? 'Paid' : 'Not Paid'}</p>
-          </div>
-        </div>
-        <button
-          onClick={onClose}
-          className='w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'>
-          Close
-        </button>
-      </motion.div>
-    </motion.div>
-  );
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   if (loading) {
     return (
-      <div className='flex justify-center items-center h-screen'>
-        <div className='animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-indigo-500'></div>
-      </div>
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='80vh'>
+        <CircularProgress
+          color='primary'
+          size={60}
+          thickness={4}
+        />
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className='flex justify-center items-center h-screen'>
-        <div
-          className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative'
-          role='alert'>
-          <strong className='font-bold'>Error!</strong>
-          <span className='block sm:inline'> {error}</span>
-        </div>
-      </div>
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='80vh'>
+        <Alert
+          severity='error'
+          variant='filled'
+          sx={{ maxWidth: 500 }}>
+          <Typography
+            variant='subtitle1'
+            fontWeight='medium'>
+            {error}
+          </Typography>
+        </Alert>
+      </Box>
     );
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 py-12 px-4 sm:px-6 lg:px-8'>
-      <ToastContainer
-        position='top-right'
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-      <div className='max-w-7xl mx-auto'>
-        <h1 className='text-4xl font-extrabold text-gray-900 mb-8'>
-          Your Cart
-        </h1>
-        <div className='grid grid-cols-1 gap-6'>
-          <AnimatePresence>
-            {cartItems.map((item) => (
-              <CartItemCard
-                key={item.id}
-                item={item}
-              />
-            ))}
-          </AnimatePresence>
-        </div>
-        {selectedItem && (
-          <ItemDetails
-            item={selectedItem}
+    <ThemeProvider theme={theme}>
+      <Box
+        sx={{
+          bgcolor: 'background.default',
+          minHeight: '100vh',
+          py: 5,
+        }}>
+        <Container maxWidth='lg'>
+          <Typography
+            variant='h4'
+            component='h1'
+            color='primary'
+            gutterBottom
+            sx={{ mb: 4, fontWeight: 'bold' }}>
+            <ShoppingCart sx={{ mr: 1.5, mb: 0.5 }} />
+            Your Cart
+          </Typography>
+
+          {cartItems.length === 0 ? (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 5,
+                textAlign: 'center',
+                borderRadius: 2,
+                bgcolor: 'white',
+                border: '1px dashed #1976d2',
+              }}>
+              <Typography
+                variant='h6'
+                color='text.secondary'>
+                Your cart is empty
+              </Typography>
+              <Button
+                variant='contained'
+                color='primary'
+                sx={{ mt: 2 }}
+                href='/shop' // Adjust this route as needed
+              >
+                Continue Shopping
+              </Button>
+            </Paper>
+          ) : (
+            <>
+              <AnimatePresence>
+                {cartItems.map((item) => (
+                  <CartItem
+                    key={item.id}
+                    item={item}
+                    onView={setSelectedItem}
+                    onRemove={handleRemoveFromCart}
+                  />
+                ))}
+              </AnimatePresence>
+
+              <Box
+                component={Paper}
+                elevation={3}
+                sx={{
+                  p: 3,
+                  mt: 4,
+                  borderRadius: 2,
+                  bgcolor: '#f8f9fc',
+                }}>
+                <Box
+                  display='flex'
+                  justifyContent='space-between'
+                  alignItems='center'>
+                  <Box>
+                    <Typography
+                      variant='h6'
+                      color='text.secondary'>
+                      Cart Summary
+                    </Typography>
+                    <Typography
+                      variant='body2'
+                      color='text.secondary'>
+                      {cartItems.length}{' '}
+                      {cartItems.length === 1 ? 'item' : 'items'}
+                    </Typography>
+                  </Box>
+                  <Box
+                    display='flex'
+                    flexDirection='column'
+                    alignItems='flex-end'>
+                    <Box
+                      display='flex'
+                      alignItems='center'>
+                      <Typography
+                        variant='h5'
+                        fontWeight='bold'
+                        color='primary'>
+                        Total: Rs {calculateTotal()}
+                      </Typography>
+                    </Box>
+                    <Button
+                      variant='contained'
+                      color='primary'
+                      size='large'
+                      startIcon={<Payment />}
+                      onClick={() => handlePayment(calculateTotal())}
+                      sx={{ mt: 1.5, px: 4, py: 1 }}>
+                      Proceed to Payment
+                    </Button>
+                  </Box>
+                </Box>
+              </Box>
+            </>
+          )}
+
+          <Dialog
+            open={selectedItem !== null}
             onClose={() => setSelectedItem(null)}
-          />
-        )}
-        <div className='mt-8 flex justify-end'>
-          <span className='text-2xl font-bold'>
-            Total: Rs {calculateTotal()}
-          </span>
-          <button
-            onClick={() => handlePayment(calculateTotal())}
-            className='ml-4 px-6 py-3 bg-green-600 text-white font-bold rounded-lg shadow-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'>
-            Proceed to Payment
-          </button>
-        </div>
-      </div>
-    </div>
+            maxWidth='sm'
+            fullWidth
+            PaperProps={{
+              sx: {
+                borderRadius: 2,
+                overflow: 'hidden',
+              },
+            }}>
+            {selectedItem && (
+              <>
+                <Box
+                  sx={{
+                    bgcolor: 'primary.main',
+                    color: 'white',
+                    py: 2,
+                    px: 3,
+                  }}>
+                  <DialogTitle
+                    sx={{ p: 0, fontSize: '1.4rem', fontWeight: 'bold' }}>
+                    {selectedItem.bikePartDetails.partName}
+                  </DialogTitle>
+                </Box>
+                <DialogContent sx={{ pt: 3 }}>
+                  <CardMedia
+                    component='img'
+                    height='200'
+                    image={selectedItem.bikePartDetails.imageUrl}
+                    alt={selectedItem.bikePartDetails.partName}
+                    sx={{ borderRadius: 1, mb: 2 }}
+                  />
+
+                  <Grid
+                    container
+                    spacing={2}
+                    sx={{ mt: 1 }}>
+                    <Grid
+                      item
+                      xs={6}>
+                      <Box
+                        display='flex'
+                        alignItems='center'>
+                        <CalendarMonth
+                          fontSize='small'
+                          color='primary'
+                          sx={{ mr: 1 }}
+                        />
+                        <Typography variant='body1'>
+                          {new Date(
+                            selectedItem.dateAdded
+                          ).toLocaleDateString()}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={6}>
+                      <Box
+                        display='flex'
+                        alignItems='center'>
+                        <AccessTime
+                          fontSize='small'
+                          color='primary'
+                          sx={{ mr: 1 }}
+                        />
+                        <Typography variant='body1'>
+                          {new Date(
+                            selectedItem.dateAdded
+                          ).toLocaleTimeString()}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={6}>
+                      <Box
+                        display='flex'
+                        alignItems='center'>
+                        <TwoWheeler
+                          fontSize='small'
+                          color='primary'
+                          sx={{ mr: 1 }}
+                        />
+                        <Typography variant='body1'>
+                          Quantity: {selectedItem.quantity}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={6}>
+                      <Box
+                        display='flex'
+                        alignItems='center'>
+                        <CurrencyRupee
+                          fontSize='small'
+                          color='primary'
+                          sx={{ mr: 1 }}
+                        />
+                        <Typography
+                          variant='body1'
+                          fontWeight='bold'>
+                          Rs {selectedItem.totalPrice.toFixed(2)}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  </Grid>
+
+                  <Divider sx={{ my: 2 }} />
+
+                  <Box
+                    sx={{
+                      bgcolor: selectedItem.isPaymentDone
+                        ? '#e6f7e6'
+                        : '#fff4e5',
+                      p: 1.5,
+                      borderRadius: 1,
+                    }}>
+                    <Typography
+                      color={
+                        selectedItem.isPaymentDone
+                          ? 'success.dark'
+                          : 'warning.dark'
+                      }>
+                      Payment Status:{' '}
+                      {selectedItem.isPaymentDone ? 'Paid' : 'Not Paid'}
+                    </Typography>
+                  </Box>
+                </DialogContent>
+                <DialogActions sx={{ p: 2 }}>
+                  <Button
+                    onClick={() => setSelectedItem(null)}
+                    color='primary'
+                    variant='contained'
+                    fullWidth>
+                    Close
+                  </Button>
+                </DialogActions>
+              </>
+            )}
+          </Dialog>
+
+          <Snackbar
+            open={snackbar.open}
+            autoHideDuration={5000}
+            onClose={handleCloseSnackbar}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+            <Alert
+              onClose={handleCloseSnackbar}
+              severity={snackbar.severity}
+              variant='filled'
+              sx={{ width: '100%' }}>
+              {snackbar.message}
+            </Alert>
+          </Snackbar>
+        </Container>
+      </Box>
+    </ThemeProvider>
   );
 };
 
