@@ -41,6 +41,7 @@ const MechanicList = () => {
   );
 
   const handleViewBookings = (mechanic) => {
+    console.log('Button Clicked');
     setSelectedMechanic(mechanic);
     setShowBookingModal(true);
   };
@@ -102,18 +103,20 @@ const MechanicList = () => {
                       </div>
                     </td>
                     <td className='py-3 px-4'>
-                      <div className='flex items-center'>
-                        {mechanic.bookingDetails?.length || 0} bookings
+                      <div className='pl-7 flex items-center'>
+                        {mechanic.bookingDetails?.length || 0}
                       </div>
                     </td>
+
                     <td className='py-3 px-4'>
-                      <button
-                        onClick={() => handleViewBookings(mechanic)}
-                        className='bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md flex items-center transition duration-150 ease-in-out'
-                        disabled={!mechanic.bookingDetails?.length}>
-                        <FaEye className='mr-1' />
-                        View Bookings
-                      </button>
+                      {mechanic.bookingDetails?.length > 0 && (
+                        <button
+                          onClick={() => handleViewBookings(mechanic)}
+                          className='bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md flex items-center transition duration-150 ease-in-out'>
+                          <FaEye className='mr-1' />
+                          View Bookings
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

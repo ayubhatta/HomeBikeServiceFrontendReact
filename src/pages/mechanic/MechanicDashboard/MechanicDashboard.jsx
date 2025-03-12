@@ -123,11 +123,13 @@ function MechanicDashboard() {
       // Additional details that might be useful
       serviceType: 'Bike Service',
       notes: `
-            Address: ${booking.bookingAddress || 'N/A'}
-            Contact: ${user.phoneNumber} / ${user.email}
-            Estimated Service Cost: $${booking.total || bike.bikePrice}
-            Parts Cost: $${partsCost}
-            Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
+          Address: ${booking.bookingAddress || 'N/A'}
+          Phone Number : ${user.phoneNumber} 
+          Email : ${user.email}
+          Estimated Service Cost: Rs ${booking.total || bike.bikePrice} 
+          Parts Cost: Rs ${partsCost}
+          Total Cost: Rs ${(booking.total || bike.bikePrice) + partsCost}
+          `,
 
       // Original data preserved for reference if needed
       rawData: {
@@ -239,7 +241,7 @@ function MechanicDashboard() {
   const handleStatusChange = async (taskId, newStatus) => {
     try {
       let apiResponse;
-      console.log('Task ID:', taskId);
+      setLoading(true);
 
       // Determine which API function to call based on the new status
       if (newStatus === 'In-Progress') {
@@ -247,11 +249,13 @@ function MechanicDashboard() {
           isAssignedTo: taskId,
         };
         apiResponse = await updateBookingStatusApi(data);
+        setLoading(true);
       } else if (newStatus === 'Complete') {
         const data = {
           isAssignedTo: [taskId],
         };
         apiResponse = await updateBookingStatusToCompletedApi(data);
+        setLoading(true);
       }
 
       // If the API call is successful, update the local state
@@ -295,6 +299,8 @@ function MechanicDashboard() {
         message: 'Failed to update task status',
         severity: 'error',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -582,16 +588,7 @@ function MechanicDashboard() {
                             Complete Task
                           </Button>
                         )}
-                        {task.status === 'Complete' && (
-                          <Button
-                            size='small'
-                            variant='outlined'
-                            onClick={(e) => {
-                              e.stopPropagation();
-                            }}>
-                            View Details
-                          </Button>
-                        )}
+                        {task.status === 'Complete' && null}
                         {task.hasParts && (
                           <Button
                             size='small'
@@ -664,7 +661,10 @@ function MechanicDashboard() {
                     <Grid
                       item
                       xs={6}>
-                      <Typography variant='subtitle2'>Customer</Typography>
+                      <Typography variant='subtitle2'>
+                        {' '}
+                        <strong>Customer</strong>
+                      </Typography>
                       <Typography variant='body1'>
                         {getTaskValue(
                           selectedTask,
@@ -676,7 +676,9 @@ function MechanicDashboard() {
                     <Grid
                       item
                       xs={6}>
-                      <Typography variant='subtitle2'>Vehicle</Typography>
+                      <Typography variant='subtitle2'>
+                        <strong>Vehicle</strong>
+                      </Typography>
                       <Typography variant='body1'>
                         {getTaskValue(
                           selectedTask,
@@ -689,7 +691,7 @@ function MechanicDashboard() {
                       item
                       xs={6}>
                       <Typography variant='subtitle2'>
-                        Appointment Date
+                        <strong>Appointment Date</strong>
                       </Typography>
                       <Typography variant='body1'>
                         {getTaskValue(selectedTask, 'assignedDate')}
@@ -699,7 +701,7 @@ function MechanicDashboard() {
                       item
                       xs={6}>
                       <Typography variant='subtitle2'>
-                        Appointment Time
+                        <strong>Appointment Time</strong>
                       </Typography>
                       <Typography variant='body1'>
                         {getTaskValue(
@@ -712,7 +714,9 @@ function MechanicDashboard() {
                     <Grid
                       item
                       xs={6}>
-                      <Typography variant='subtitle2'>Booking ID</Typography>
+                      <Typography variant='subtitle2'>
+                        <strong>Booking ID</strong>
+                      </Typography>
                       <Typography variant='body1'>
                         {getTaskValue(selectedTask, 'bookingId')}
                       </Typography>
@@ -732,7 +736,9 @@ function MechanicDashboard() {
                     <Grid
                       item
                       xs={12}>
-                      <Typography variant='subtitle2'>Contact Info</Typography>
+                      <Typography variant='subtitle2'>
+                        <strong>Contact Info</strong>
+                      </Typography>
                       <Typography variant='body1'>
                         {selectedTask.rawData?.customer?.phoneNumber || 'N/A'} /{' '}
                         {selectedTask.rawData?.customer?.email || 'N/A'}
@@ -742,7 +748,7 @@ function MechanicDashboard() {
                       item
                       xs={12}>
                       <Typography variant='subtitle2'>
-                        Service Location
+                        <strong>Service Location</strong>
                       </Typography>
                       <Typography variant='body1'>
                         {selectedTask.rawData?.booking?.bookingAddress || 'N/A'}
@@ -770,7 +776,7 @@ function MechanicDashboard() {
                                 Service Cost
                               </Typography>
                               <Typography variant='body1'>
-                                ${selectedTask.serviceCost}
+                                Rs {selectedTask.serviceCost}
                               </Typography>
                             </Grid>
                             <Grid
@@ -780,7 +786,7 @@ function MechanicDashboard() {
                                 Parts Cost
                               </Typography>
                               <Typography variant='body1'>
-                                ${selectedTask.partsCost}
+                                Rs{selectedTask.partsCost}
                               </Typography>
                             </Grid>
                             <Grid
@@ -798,7 +804,7 @@ function MechanicDashboard() {
                                 <Typography
                                   variant='subtitle1'
                                   fontWeight='bold'>
-                                  ${selectedTask.totalCost}
+                                  Rs{selectedTask.totalCost}
                                 </Typography>
                               </Box>
                             </Grid>
@@ -856,12 +862,12 @@ function MechanicDashboard() {
                                         sx={{ mb: 1 }}
                                       />
                                       <Typography variant='body2'>
-                                        ${item.cartDetails.price} each
+                                        Rs{item.cartDetails.price} each
                                       </Typography>
                                       <Typography
                                         variant='subtitle2'
                                         fontWeight='bold'>
-                                        Total: $
+                                        Total: Rs
                                         {item.quantity * item.cartDetails.price}
                                       </Typography>
                                     </Box>
@@ -881,7 +887,7 @@ function MechanicDashboard() {
                               <Typography
                                 variant='subtitle1'
                                 fontWeight='bold'>
-                                ${selectedTask.partsCost}
+                                Rs{selectedTask.partsCost}
                               </Typography>
                             </Box>
                           </AccordionDetails>
@@ -891,13 +897,16 @@ function MechanicDashboard() {
                   </Grid>
 
                   <Box sx={{ mt: 2 }}>
-                    <Typography variant='subtitle2'>Notes</Typography>
                     <Typography variant='body1'>
-                      {getTaskValue(
-                        selectedTask,
-                        'notes',
-                        'No notes available'
-                      )}
+                      <strong>Notes</strong>
+                      {getTaskValue(selectedTask, 'notes', 'No notes available')
+                        .split('\n')
+                        .map((line, index) => (
+                          <React.Fragment key={index}>
+                            {line}
+                            <br />
+                          </React.Fragment>
+                        ))}
                     </Typography>
                   </Box>
 

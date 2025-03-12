@@ -6,7 +6,6 @@ import {
   FaEnvelope,
   FaFileAlt,
   FaFilter,
-  FaIdCard,
   FaMapMarkerAlt,
   FaMoneyBillWave,
   FaMotorcycle,
@@ -137,6 +136,9 @@ const AdminBookings = () => {
       (booking.userDetails?.email || '')
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
+    (booking.mechanicDetails?.name || '')
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
 
     // Then filter by status if a specific status is selected
     const matchesStatus =
@@ -210,7 +212,7 @@ const AdminBookings = () => {
             booking.id === selectedBookingId
               ? {
                   ...booking,
-                  mechanicId: selectedMechanic.id,
+                  mechanicId: selectedMechanic.mechanicId,
                   mechanicName: selectedMechanic.fullName,
                   mechanicDetails: selectedMechanic, // Add mechanic details
                 }
@@ -306,10 +308,10 @@ const AdminBookings = () => {
                 <div className='tw-mb-6 tw-max-h-96 tw-overflow-y-auto tw-border tw-border-gray-700 tw-rounded-lg'>
                   {mechanics.map((mechanic) => (
                     <div
-                      key={mechanic.id}
+                      key={mechanic.mechanicId}
                       onClick={() => handleMechanicSelect(mechanic)}
                       className={`tw-flex tw-items-center tw-p-3 tw-border-b tw-border-gray-700 hover:tw-bg-gray-700 tw-cursor-pointer tw-transition-colors ${
-                        selectedMechanic?.id === mechanic.id
+                        selectedMechanic?.mechanicId === mechanic.mechanicId
                           ? 'tw-bg-blue-900'
                           : ''
                       }`}>
@@ -331,7 +333,8 @@ const AdminBookings = () => {
                         )}
                       </div>
                       <div className='tw-w-6 tw-h-6 tw-rounded-full tw-border tw-border-gray-500 tw-flex tw-items-center tw-justify-center'>
-                        {selectedMechanic?.id === mechanic.id && (
+                        {selectedMechanic?.mechanicId ===
+                          mechanic.mechanicId && (
                           <div className='tw-w-4 tw-h-4 tw-bg-blue-500 tw-rounded-full'></div>
                         )}
                       </div>
@@ -597,14 +600,21 @@ const AdminBookings = () => {
                   </p>
                 </div>
 
-                {booking.mechanicName && (
+                {booking.mechanicDetails ? (
                   <div className='tw-flex tw-items-center tw-mb-4 tw-bg-blue-900 tw-bg-opacity-40 tw-p-2 tw-rounded'>
                     <FaWrench className='tw-mr-2 tw-text-blue-400' />
                     <p>
                       Assigned to:{' '}
                       <span className='tw-font-medium'>
-                        {booking.mechanicName}
+                        {booking.mechanicDetails.name}
                       </span>
+                    </p>
+                  </div>
+                ) : (
+                  <div className='tw-flex tw-items-center tw-mb-4 tw-bg-blue-900 tw-bg-opacity-40 tw-p-2 tw-rounded'>
+                    <FaWrench className='tw-mr-2 tw-text-blue-400' />
+                    <p>
+                      <span className='tw-font-medium'>Not Assigned</span>
                     </p>
                   </div>
                 )}
@@ -810,21 +820,6 @@ const AdminBookings = () => {
           Showing{' '}
           <span className='tw-font-medium'>{filteredBookings.length}</span> of{' '}
           <span className='tw-font-medium'>{bookings.length}</span> bookings
-        </div>
-
-        <div className='tw-flex tw-space-x-2'>
-          <button className='tw-px-4 tw-py-2 tw-bg-gray-800 tw-text-white tw-rounded-lg tw-border tw-border-gray-700 hover:tw-bg-gray-700 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed'>
-            Previous
-          </button>
-          <button className='tw-px-4 tw-py-2 tw-bg-blue-600 tw-text-white tw-rounded-lg hover:tw-bg-blue-700'>
-            1
-          </button>
-          <button className='tw-px-4 tw-py-2 tw-bg-gray-800 tw-text-white tw-rounded-lg tw-border tw-border-gray-700 hover:tw-bg-gray-700'>
-            2
-          </button>
-          <button className='tw-px-4 tw-py-2 tw-bg-gray-800 tw-text-white tw-rounded-lg tw-border tw-border-gray-700 hover:tw-bg-gray-700 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed'>
-            Next
-          </button>
         </div>
       </div>
     </motion.div>

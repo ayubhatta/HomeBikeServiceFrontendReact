@@ -21,10 +21,22 @@ const BookNow = () => {
 
         // Make sure we're accessing the bikes array correctly
         const bikesData = response.data.bikes;
-        setBikes(bikesData);
 
-        // Calculate total pages
-        const total = bikesData.length;
+        // Filter out duplicates based on bike name
+        const uniqueBikes = [];
+        const bikeNames = new Set();
+
+        bikesData.forEach((bike) => {
+          if (bike && bike.bikeName && !bikeNames.has(bike.bikeName)) {
+            bikeNames.add(bike.bikeName);
+            uniqueBikes.push(bike);
+          }
+        });
+
+        setBikes(uniqueBikes);
+
+        // Calculate total pages based on unique bikes
+        const total = uniqueBikes.length;
         setBikeCount(total);
         setTotalPages(Math.ceil(total / limit));
       } catch (err) {
@@ -63,6 +75,11 @@ const BookNow = () => {
     exit: { opacity: 0, y: 10 },
   };
 
+  // Get current page items
+  const indexOfLastBike = page * limit;
+  const indexOfFirstBike = indexOfLastBike - limit;
+  const currentBikes = bikes.slice(indexOfFirstBike, indexOfLastBike);
+
   return (
     <div className='container mx-auto px-4 py-12'>
       <motion.h1
@@ -81,7 +98,8 @@ const BookNow = () => {
         <>
           <div className='mb-6 flex items-center justify-between'>
             <p className='text-gray-600'>
-              Showing <span className='font-medium'>{bikes.length}</span> bikes
+              Showing <span className='font-medium'>{currentBikes.length}</span>{' '}
+              bikes
               {bikeCounts > 0 && (
                 <span>
                   {' '}
@@ -104,7 +122,7 @@ const BookNow = () => {
           </div>
 
           <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4'>
-            {bikes.map((singleBike, index) => (
+            {currentBikes.map((singleBike, index) => (
               <motion.div
                 key={singleBike.id || index}
                 variants={fadeInUp}

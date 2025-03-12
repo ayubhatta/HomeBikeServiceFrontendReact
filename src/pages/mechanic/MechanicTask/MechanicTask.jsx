@@ -29,9 +29,10 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import {
-  getAssignedBookingMechanicApi,
+  getMechanicByIdApi,
   updateBookingStatusApi,
   updateBookingStatusToCompletedApi,
+  userID,
 } from '../../../api/api';
 import {
   AppBarComponent,
@@ -69,8 +70,8 @@ const MechanicTask = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const mechanicId = 10;
-        const response = await getAssignedBookingMechanicApi(mechanicId);
+        const mechanicId = userID;
+        const response = await getMechanicByIdApi(mechanicId);
         setMechanicData(response.data);
         setFilteredBookings(response.data.bookingDetails || []);
         setLoading(false);
@@ -451,9 +452,7 @@ const MechanicTask = () => {
           </TableContainer>
         ) : (
           <Paper sx={{ p: 3, textAlign: 'center' }}>
-            <Typography variant='body1'>
-              No tasks have been assigned to you
-            </Typography>
+            <Typography variant='body1'>No booking Found</Typography>
           </Paper>
         )}
       </Container>
@@ -569,7 +568,7 @@ const MechanicTask = () => {
                   <strong>Address:</strong> {selectedBooking.bookingAddress}
                 </Typography>
                 <Typography>
-                  <strong>Total Fee:</strong> $
+                  <strong>Total Fee:</strong> Rs
                   {selectedBooking.total.toFixed(2)}
                 </Typography>
               </Box>
@@ -588,7 +587,7 @@ const MechanicTask = () => {
                   <strong>Bike Number:</strong> {selectedBooking.bikeNumber}
                 </Typography>
                 <Typography>
-                  <strong>Base Price:</strong> $
+                  <strong>Base Price:</strong> Rs
                   {selectedBooking.bikeDetails.bikePrice.toFixed(2)}
                 </Typography>
                 <Typography>
