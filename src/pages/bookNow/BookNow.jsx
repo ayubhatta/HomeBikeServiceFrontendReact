@@ -107,18 +107,6 @@ const BookNow = () => {
                 </span>
               )}
             </p>
-
-            <div className='rounded-md bg-indigo-50 px-4 py-2'>
-              <select
-                className='bg-indigo-50 text-indigo-700 focus:outline-none'
-                onChange={(e) => {
-                  /* Add sorting functionality */
-                }}>
-                <option value='price-low'>Price: Low to High</option>
-                <option value='price-high'>Price: High to Low</option>
-                <option value='newest'>Newest First</option>
-              </select>
-            </div>
           </div>
 
           <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4'>

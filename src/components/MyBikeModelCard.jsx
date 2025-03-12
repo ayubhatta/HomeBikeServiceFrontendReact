@@ -21,7 +21,7 @@ const MyBikeCard = ({ bikeInformation, color }) => {
         style={{
           width: '100%',
           height: '300px',
-          objectFit: 'cover',
+          objectFit: 'fit',
         }}
       />
       <div class='card-body'>

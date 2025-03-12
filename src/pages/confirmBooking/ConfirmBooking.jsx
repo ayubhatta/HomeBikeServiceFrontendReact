@@ -173,12 +173,12 @@ const ConfirmBooking = () => {
             </h3>
             <div className='mt-2 flex justify-between'>
               <p className='text-sm text-gray-500'>Bike Price:</p>
-              <p className='text-sm font-semibold text-gray-900'>${total}</p>
+              <p className='text-sm font-semibold text-gray-900'>Rs {total}</p>
             </div>
 
             <div className='mt-4 flex justify-between border-t border-gray-200 pt-4'>
               <p className='text-base font-medium text-gray-900'>Total:</p>
-              <p className='text-base font-bold text-blue-600'>${total}</p>
+              <p className='text-base font-bold text-blue-600'>Rs {total}</p>
             </div>
           </div>
         </div>
