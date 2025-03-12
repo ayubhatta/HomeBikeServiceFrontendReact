@@ -122,12 +122,12 @@ function MechanicDashboard() {
 
       // Additional details that might be useful
       serviceType: 'Bike Service',
-      notes: `Bike Chasis Number: ${booking.bikeChasisNumber || 'N/A'}
-Address: ${booking.bookingAddress || 'N/A'}
-Contact: ${user.phoneNumber} / ${user.email}
-Estimated Service Cost: $${booking.total || bike.bikePrice}
-Parts Cost: $${partsCost}
-Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
+      notes: `
+            Address: ${booking.bookingAddress || 'N/A'}
+            Contact: ${user.phoneNumber} / ${user.email}
+            Estimated Service Cost: $${booking.total || bike.bikePrice}
+            Parts Cost: $${partsCost}
+            Total Cost: $${(booking.total || bike.bikePrice) + partsCost}`,
 
       // Original data preserved for reference if needed
       rawData: {

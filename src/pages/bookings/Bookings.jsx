@@ -362,12 +362,6 @@ const Bookings = () => {
                 </span>
               </div>
               <div>
-                <span className='text-gray-500'>Chasis:</span>
-                <span className='ml-1 text-gray-800'>
-                  {booking.bikeChasisNumber || 'N/A'}
-                </span>
-              </div>
-              <div>
                 <span className='text-gray-500'>Bike #:</span>
                 <span className='ml-1 text-gray-800'>
                   {booking.bikeNumber || 'N/A'}

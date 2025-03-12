@@ -588,10 +588,6 @@ const MechanicTask = () => {
                   <strong>Bike Number:</strong> {selectedBooking.bikeNumber}
                 </Typography>
                 <Typography>
-                  <strong>Chassis Number:</strong>{' '}
-                  {selectedBooking.bikeChasisNumber}
-                </Typography>
-                <Typography>
                   <strong>Base Price:</strong> $
                   {selectedBooking.bikeDetails.bikePrice.toFixed(2)}
                 </Typography>

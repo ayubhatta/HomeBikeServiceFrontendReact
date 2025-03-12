@@ -7,7 +7,6 @@ const ConfirmBooking = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [formData, setFormData] = useState({
     bikeName: '',
-    bikeChasisNumber: '',
     bookingDate: '',
     bookingTime: '',
     bikeDescription: '',

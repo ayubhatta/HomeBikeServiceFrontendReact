@@ -610,12 +610,6 @@ const AdminBookings = () => {
                 )}
 
                 <div className='tw-flex tw-justify-between tw-items-center tw-mt-6'>
-                  {booking.bikeChasisNumber && (
-                    <span className='tw-flex tw-items-center tw-text-sm tw-text-gray-400'>
-                      <FaIdCard className='tw-mr-1' />{' '}
-                      {booking.bikeChasisNumber}
-                    </span>
-                  )}
                   <button
                     onClick={() => toggleBookingDetails(booking.id)}
                     className='tw-bg-blue-500 hover:tw-bg-blue-600 tw-text-white tw-font-bold tw-py-2 tw-px-4 tw-rounded tw-transition-colors tw-duration-300'>
