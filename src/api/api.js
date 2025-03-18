@@ -104,6 +104,9 @@ export const getAllBikePartsApi = () => Api.get('/api/bikeParts', config);
 export const updateBikePartsApi = (id, data) =>
   FileApi.put(`/api/bikeParts/${id}`, data, config);
 
+export const getSingleBikeParts = (id) =>
+  Api.get(`/api/bikeParts/${id}`, config);
+
 // ================================ Cart Api =============
 export const addToCartApi = (data) => Api.post('/api/cart/add', data, config);
 

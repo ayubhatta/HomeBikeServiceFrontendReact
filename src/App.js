@@ -9,6 +9,7 @@ import BikeDashboard from './pages/admin/Bike/BikeDashboard';
 import UpdateBike from './pages/admin/Bike/UpdateBike';
 import Dashboard from './pages/admin/adminDashboard/AdminDashboard';
 import BikePartsDashboard from './pages/admin/bikeParts/BikeParts';
+import UpdateBikeParts from './pages/admin/bikeParts/UpdateBikeParts';
 import AdminBookings from './pages/admin/bookings/AdminBookings';
 import CustomerDashboard from './pages/admin/costumer/CustomerDashboard';
 import Feedback from './pages/admin/feedback/Feedback';
@@ -136,6 +137,10 @@ function App() {
           <Route
             path='/admin/parts'
             element={<BikePartsDashboard />}
+          />
+          <Route
+            path='/admin/updatebikePart/:id'
+            element={<UpdateBikeParts />}
           />
           <Route
             path='/admin/customerDashboard'
