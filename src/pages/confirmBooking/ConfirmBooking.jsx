@@ -1,20 +1,50 @@
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Checkbox,
+  CircularProgress,
+  Container,
+  Divider,
+  FormControlLabel,
+  Grid,
+  Link,
+  Snackbar,
+  TextField,
+  Typography,
+} from '@mui/material';
+import {
+  DatePicker,
+  LocalizationProvider,
+  TimePicker,
+} from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { addToBookingApi, getSingleBike, userID } from '../../api/api';
 
 const ConfirmBooking = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [formData, setFormData] = useState({
     bikeName: '',
-    bookingDate: '',
-    bookingTime: '',
+    bookingDate: null,
+    bookingTime: null,
     bikeDescription: '',
     bikeNumber: '',
     bookingAddress: '',
   });
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
+  const [timeError, setTimeError] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -24,8 +54,36 @@ const ConfirmBooking = () => {
     }));
   };
 
+  const handleDateChange = (date) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      bookingDate: date,
+    }));
+  };
+
+  const handleTimeChange = (time) => {
+    // Check if time is within allowed range (8 AM to 8 PM)
+    if (time) {
+      const hours = time.hour();
+      const isValidTime = hours >= 8 && hours < 20;
+
+      setTimeError(!isValidTime);
+
+      if (isValidTime) {
+        setFormData((prevData) => ({
+          ...prevData,
+          bookingTime: time,
+        }));
+      }
+    }
+  };
+
   const handleCheckboxChange = (event) => {
     setIsChecked(event.target.checked);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
   const params = useParams();
@@ -42,17 +100,31 @@ const ConfirmBooking = () => {
       })
       .catch((err) => {
         console.error(err);
-        toast.error('Failed to fetch bike details');
+        setSnackbar({
+          open: true,
+          message: 'Failed to fetch bike details',
+          severity: 'error',
+        });
         setLoading(false);
       });
   }, [params.id]);
 
   const handleSubmit = (e) => {
-    console.log(userID);
     e.preventDefault();
+
+    // Format date and time for API
+    const formattedDate = formData.bookingDate
+      ? formData.bookingDate.format('YYYY-MM-DD')
+      : '';
+
+    const formattedTime = formData.bookingTime
+      ? formData.bookingTime.format('HH:mm')
+      : '';
 
     const data = {
       ...formData,
+      bookingDate: formattedDate,
+      bookingTime: formattedTime,
       userId: userID,
       bikeId: params.id,
       total: total,
@@ -63,18 +135,36 @@ const ConfirmBooking = () => {
       .then((res) => {
         if (res.status === 200) {
           if (res.data.success) {
-            toast.success(res.data.message);
-            window.location.href = '/user/booking';
+            setSnackbar({
+              open: true,
+              message: res.data.message,
+              severity: 'success',
+            });
+            setTimeout(() => {
+              window.location.href = '/user/booking';
+            }, 1500);
           } else if (res.data.success === false) {
-            toast.error(res.data.message);
+            setSnackbar({
+              open: true,
+              message: res.data.message,
+              severity: 'error',
+            });
           }
         }
       })
       .catch((err) => {
         if (err.response) {
-          toast.error(err.response.data.message);
+          setSnackbar({
+            open: true,
+            message: err.response.data.message,
+            severity: 'error',
+          });
         } else {
-          toast.error('Something went wrong');
+          setSnackbar({
+            open: true,
+            message: 'Something went wrong',
+            severity: 'error',
+          });
         }
       })
       .finally(() => setLoading(false));
@@ -82,108 +172,254 @@ const ConfirmBooking = () => {
 
   if (loading) {
     return (
-      <div className='flex justify-center items-center h-screen'>
-        <div className='animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500'></div>
-      </div>
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='100vh'>
+        <CircularProgress
+          size={60}
+          thickness={4}
+        />
+      </Box>
     );
   }
 
+  // Get today's date for date picker minimum date
+  const today = dayjs();
+
   return (
-    <div className='bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8'>
-      <div className='max-w-4xl mx-auto'>
-        <h1 className='text-4xl font-extrabold text-center text-gray-900 mb-8'>
-          Fill this form to confirm your booking
-        </h1>
-        <div className='bg-white shadow-2xl rounded-lg overflow-hidden'>
-          <div className='p-8'>
-            <form
-              onSubmit={handleSubmit}
-              className='space-y-6'>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                {Object.entries(formData).map(([key, value]) => (
-                  <div key={key}>
-                    <label
-                      htmlFor={key}
-                      className='block text-sm font-medium text-gray-700 mb-1'>
-                      {key.charAt(0).toUpperCase() +
-                        key
-                          .slice(1)
-                          .replace(/([A-Z])/g, ' $1')
-                          .trim()}
-                    </label>
-                    <input
-                      type={
-                        key === 'bookingDate'
-                          ? 'date'
-                          : key === 'bookingTime'
-                          ? 'time'
-                          : 'text'
-                      }
-                      name={key}
-                      id={key}
-                      value={value}
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <Container
+        maxWidth='lg'
+        sx={{ py: 6 }}>
+        <Typography
+          variant='h3'
+          component='h1'
+          align='center'
+          gutterBottom
+          fontWeight='bold'
+          color='primary.dark'>
+          Confirm Your Booking
+        </Typography>
+
+        <Box sx={{ mt: 4 }}>
+          <Card elevation={6}>
+            <CardHeader
+              title='Booking Details'
+              titleTypographyProps={{ variant: 'h5', fontWeight: 'medium' }}
+              sx={{ bgcolor: 'primary.light', color: 'primary.contrastText' }}
+            />
+            <CardContent>
+              <form onSubmit={handleSubmit}>
+                <Grid
+                  container
+                  spacing={3}>
+                  <Grid
+                    item
+                    xs={12}
+                    md={6}>
+                    <TextField
+                      fullWidth
+                      label='Bike Name'
+                      name='bikeName'
+                      value={formData.bikeName}
+                      disabled
+                      variant='outlined'
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                    />
+                  </Grid>
+                  <Grid
+                    item
+                    xs={12}
+                    md={6}>
+                    <TextField
+                      fullWidth
+                      label='Bike Number'
+                      name='bikeNumber'
+                      value={formData.bikeNumber}
                       onChange={handleInputChange}
-                      disabled={key === 'bikeName'}
-                      className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                      variant='outlined'
                       required
                     />
-                  </div>
-                ))}
-              </div>
+                  </Grid>
+                  <Grid
+                    item
+                    xs={12}
+                    md={6}>
+                    <DatePicker
+                      label='Booking Date'
+                      value={formData.bookingDate}
+                      onChange={handleDateChange}
+                      minDate={today}
+                    />
+                  </Grid>
+                  <Grid
+                    item
+                    xs={12}
+                    md={6}>
+                    <TimePicker
+                      label='Booking Time (8am - 8pm only)'
+                      value={formData.bookingTime}
+                      onChange={handleTimeChange}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          required: true,
+                          variant: 'outlined',
+                          error: timeError,
+                          helperText: timeError
+                            ? 'Please select a time between 8:00 AM and 8:00 PM'
+                            : '',
+                        },
+                      }}
+                    />
+                  </Grid>
+                  <Grid
+                    item
+                    xs={12}>
+                    <TextField
+                      fullWidth
+                      label='Bike Description'
+                      name='bikeDescription'
+                      value={formData.bikeDescription}
+                      onChange={handleInputChange}
+                      variant='outlined'
+                      multiline
+                      rows={3}
+                      required
+                    />
+                  </Grid>
+                  <Grid
+                    item
+                    xs={12}>
+                    <TextField
+                      fullWidth
+                      label='Booking Address'
+                      name='bookingAddress'
+                      value={formData.bookingAddress}
+                      onChange={handleInputChange}
+                      variant='outlined'
+                      required
+                    />
+                  </Grid>
+                  <Grid
+                    item
+                    xs={12}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={isChecked}
+                          onChange={handleCheckboxChange}
+                          color='primary'
+                        />
+                      }
+                      label={
+                        <Typography variant='body2'>
+                          I agree to the{' '}
+                          <Link
+                            href='#'
+                            color='primary'
+                            underline='hover'>
+                            Terms and Conditions
+                          </Link>
+                        </Typography>
+                      }
+                    />
+                  </Grid>
+                </Grid>
 
-              <div className='flex items-center'>
-                <input
-                  id='terms'
-                  name='terms'
-                  type='checkbox'
-                  checked={isChecked}
-                  onChange={handleCheckboxChange}
-                  className='h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
-                />
-                <label
-                  htmlFor='terms'
-                  className='ml-2 block text-sm text-gray-900'>
-                  I agree to the{' '}
-                  <a
-                    href='#'
-                    className='font-medium text-blue-600 hover:text-blue-500'>
-                    Terms and Conditions
-                  </a>
-                </label>
-              </div>
+                <Box sx={{ mt: 4 }}>
+                  <Button
+                    type='submit'
+                    variant='contained'
+                    fullWidth
+                    disabled={
+                      !isChecked ||
+                      loading ||
+                      timeError ||
+                      !formData.bookingTime
+                    }
+                    size='large'
+                    sx={{ py: 1.5 }}>
+                    {loading ? (
+                      <CircularProgress
+                        size={24}
+                        color='inherit'
+                      />
+                    ) : (
+                      'Confirm Booking'
+                    )}
+                  </Button>
+                </Box>
+              </form>
+            </CardContent>
+          </Card>
 
-              <div>
-                <button
-                  type='submit'
-                  disabled={!isChecked || loading}
-                  className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                    isChecked && !loading
-                      ? 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
-                      : 'bg-gray-300 cursor-not-allowed'
-                  }`}>
-                  {loading ? 'Processing...' : 'Confirm Booking'}
-                </button>
-              </div>
-            </form>
-          </div>
+          <Card
+            elevation={6}
+            sx={{ mt: 4 }}>
+            <CardHeader
+              title='Booking Summary'
+              titleTypographyProps={{ variant: 'h6' }}
+              sx={{ bgcolor: 'grey.100' }}
+            />
+            <CardContent>
+              <Box
+                display='flex'
+                justifyContent='space-between'
+                alignItems='center'>
+                <Typography
+                  variant='body1'
+                  color='text.secondary'>
+                  Bike Price:
+                </Typography>
+                <Typography
+                  variant='body1'
+                  fontWeight='medium'>
+                  Rs {total.toLocaleString()}
+                </Typography>
+              </Box>
 
-          <div className='bg-gray-50 px-4 py-5 sm:px-6'>
-            <h3 className='text-lg leading-6 font-medium text-gray-900'>
-              Booking Summary
-            </h3>
-            <div className='mt-2 flex justify-between'>
-              <p className='text-sm text-gray-500'>Bike Price:</p>
-              <p className='text-sm font-semibold text-gray-900'>${total}</p>
-            </div>
+              <Divider sx={{ my: 2 }} />
 
-            <div className='mt-4 flex justify-between border-t border-gray-200 pt-4'>
-              <p className='text-base font-medium text-gray-900'>Total:</p>
-              <p className='text-base font-bold text-blue-600'>${total}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+              <Box
+                display='flex'
+                justifyContent='space-between'
+                alignItems='center'>
+                <Typography
+                  variant='h6'
+                  fontWeight='medium'>
+                  Total:
+                </Typography>
+                <Typography
+                  variant='h6'
+                  fontWeight='bold'
+                  color='primary.main'>
+                  Rs {total.toLocaleString()}
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={handleSnackbarClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+          <Alert
+            onClose={handleSnackbarClose}
+            severity={snackbar.severity}
+            variant='filled'
+            sx={{ width: '100%' }}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Container>
+    </LocalizationProvider>
   );
 };
 

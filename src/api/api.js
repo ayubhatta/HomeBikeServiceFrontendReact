@@ -119,6 +119,8 @@ export const deleteCartItemApi = (cartid) => {
 export const updateCartApi = (cartid, data) =>
   Api.put(`/api/cart/${cartid}`, data, config);
 
+export const createOrderApi = (data) => Api.put(`/api/cart/pay`, data, config);
+
 // =============================== Bookings API ===========================================
 
 // Add to Boking API

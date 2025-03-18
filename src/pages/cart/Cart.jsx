@@ -22,20 +22,21 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
+  FormControlLabel,
   Grid,
   IconButton,
   Paper,
+  Radio,
+  RadioGroup,
   Snackbar,
   ThemeProvider,
   Typography,
 } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
+import KhaltiCheckout from 'khalti-checkout-web';
 import React, { useEffect, useState } from 'react';
-import {
-  deleteCartItemApi,
-  getCartApi,
-  initializeKhaltiPaymentApi,
-} from '../../api/api';
+import { toast } from 'react-toastify';
+import { createOrderApi, deleteCartItemApi, getCartApi } from '../../api/api';
 
 // Create a custom theme with blue as primary color
 const theme = createTheme({
@@ -222,17 +223,25 @@ const Cart = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('Khalti');
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     severity: 'success',
   });
+  const [cartId, setCartId] = useState([]);
 
   useEffect(() => {
     getCartApi()
       .then((res) => {
         if (res.data.success) {
-          setCartItems(res.data.carts || []);
+          const cart = res.data.carts || [];
+          // filter the cart item with isPaymentDone = false
+          //
+          setCartItems(cart.filter((item) => !item.isPaymentDone));
+          setCartId(
+            cart.filter((item) => !item.isPaymentDone).map((item) => item.id)
+          );
         } else {
           setError('Failed to fetch cart items');
         }
@@ -246,36 +255,79 @@ const Cart = () => {
       });
   }, []);
 
-  const calculateTotal = () => {
+  const calculateSubtotal = () => {
     return cartItems
       .reduce((total, item) => total + item.totalPrice, 0)
       .toFixed(2);
   };
 
-  const handlePayment = async (totalPrice) => {
-    try {
-      const paymentResponse = await initializeKhaltiPaymentApi({
-        cartItems: cartItems,
-        totalPrice,
-        website_url: window.location.origin,
-      });
-      if (paymentResponse.data.success) {
-        const paymentUrl = paymentResponse.data.payment.payment_url;
-        window.location.href = paymentUrl;
-      } else {
+  const calculateTotal = () => {
+    const subtotal = parseFloat(calculateSubtotal());
+    return (subtotal / 100).toFixed(2);
+  };
+
+  const handlePayment = async () => {
+    if (paymentMethod === 'Khalti') {
+      handleKhaltiPayment();
+    } else {
+      return null;
+    }
+  };
+
+  const khaltiConfig = {
+    publicKey: 'test_public_key_0800545e039d45368cab4d1b2fb93d01',
+    productIdentity: '1234567890',
+    productName: 'Bike Parts Order',
+    productUrl: window.location.origin + '/cart',
+    paymentPreference: [
+      'KHALTI',
+      'EBANKING',
+      'MOBILE_BANKING',
+      'CONNECT_IPS',
+      'SCT',
+    ],
+    eventHandler: {
+      onSuccess(payload) {
+        processOrder('Khalti', payload);
+        showSnackbar('Payment successful!', 'success');
+      },
+      onError(error) {
+        console.error('Khalti payment error:', error);
+        showSnackbar('Payment failed. Please try again.', 'error');
+      },
+      onClose() {
+        console.log('Khalti payment widget closed');
+      },
+    },
+  };
+
+  const handleKhaltiPayment = () => {
+    const checkout = new KhaltiCheckout(khaltiConfig);
+    // Khalti expects amount in paisa (1 NPR = 100 paisa)
+    checkout.show({ amount: parseFloat(calculateTotal()) * 100 });
+  };
+
+  const processOrder = () => {
+    const data = {
+      cartIds: cartId,
+    };
+    createOrderApi(data)
+      .then((res) => {
+        if (res.data.success) {
+          setCartItems([]);
+          toast.success('Payment Done Successfully');
+        } else {
+          showSnackbar('Failed to create order. Please try again.', 'error');
+        }
+      })
+      .catch((err) => {
+        console.error('Error creating order:', err);
         showSnackbar(
-          'Failed to initialize payment. Please try again.',
+          'Error creating order: ' +
+            (err.response?.data?.message || err.message),
           'error'
         );
-      }
-    } catch (error) {
-      console.error('Error processing payment:', error);
-      showSnackbar(
-        'Error processing payment: ' +
-          (error.response?.data?.message || error.message || 'Unknown error'),
-        'error'
-      );
-    }
+      });
   };
 
   const handleRemoveFromCart = (itemId) => {
@@ -379,7 +431,7 @@ const Cart = () => {
                 variant='contained'
                 color='primary'
                 sx={{ mt: 2 }}
-                href='/shop' // Adjust this route as needed
+                href='/marketplace' // Adjust this route as needed
               >
                 Continue Shopping
               </Button>
@@ -406,48 +458,118 @@ const Cart = () => {
                   borderRadius: 2,
                   bgcolor: '#f8f9fc',
                 }}>
-                <Box
-                  display='flex'
-                  justifyContent='space-between'
-                  alignItems='center'>
-                  <Box>
+                <Grid
+                  container
+                  spacing={3}>
+                  <Grid
+                    item
+                    xs={12}
+                    md={6}>
                     <Typography
                       variant='h6'
-                      color='text.secondary'>
-                      Cart Summary
+                      color='text.secondary'
+                      gutterBottom>
+                      Shipping Information
                     </Typography>
+
                     <Typography
-                      variant='body2'
-                      color='text.secondary'>
-                      {cartItems.length}{' '}
-                      {cartItems.length === 1 ? 'item' : 'items'}
+                      variant='subtitle1'
+                      color='text.secondary'
+                      gutterBottom
+                      sx={{ mt: 2 }}>
+                      Payment Method
                     </Typography>
-                  </Box>
-                  <Box
-                    display='flex'
-                    flexDirection='column'
-                    alignItems='flex-end'>
+
+                    <RadioGroup
+                      value={paymentMethod}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      sx={{ mt: 1 }}>
+                      <FormControlLabel
+                        value='Khalti'
+                        control={<Radio color='primary' />}
+                        label={
+                          <Box
+                            display='flex'
+                            alignItems='center'>
+                            <img
+                              src='/assets/icons/khaltiLogo.jpg'
+                              alt='Khalti'
+                              style={{
+                                width: 150,
+                                height: 100,
+                                marginRight: 8,
+                              }}
+                            />
+                            <Typography>Khalti</Typography>
+                          </Box>
+                        }
+                      />
+                    </RadioGroup>
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={12}
+                    md={6}>
+                    <Typography
+                      variant='h6'
+                      color='text.secondary'
+                      gutterBottom>
+                      Order Summary
+                    </Typography>
+
                     <Box
-                      display='flex'
-                      alignItems='center'>
-                      <Typography
-                        variant='h5'
-                        fontWeight='bold'
-                        color='primary'>
-                        Total: Rs {calculateTotal()}
-                      </Typography>
+                      sx={{
+                        bgcolor: 'white',
+                        p: 2,
+                        borderRadius: 1,
+                        border: '1px solid #e0e0e0',
+                      }}>
+                      <Box
+                        display='flex'
+                        justifyContent='space-between'
+                        mb={1}>
+                        <Typography color='text.secondary'>
+                          Subtotal ({cartItems.length}{' '}
+                          {cartItems.length === 1 ? 'item' : 'items'})
+                        </Typography>
+                        <Typography fontWeight='medium'>
+                          Rs {calculateSubtotal()}
+                        </Typography>
+                      </Box>
+
+                      <Divider sx={{ my: 2 }} />
+
+                      <Box
+                        display='flex'
+                        justifyContent='space-between'
+                        mb={1}>
+                        <Typography
+                          variant='h6'
+                          fontWeight='bold'>
+                          Total
+                        </Typography>
+                        <Typography
+                          variant='h6'
+                          fontWeight='bold'
+                          color='primary'>
+                          Rs {calculateTotal()}
+                        </Typography>
+                      </Box>
                     </Box>
+
                     <Button
                       variant='contained'
                       color='primary'
                       size='large'
+                      fullWidth
                       startIcon={<Payment />}
-                      onClick={() => handlePayment(calculateTotal())}
-                      sx={{ mt: 1.5, px: 4, py: 1 }}>
-                      Proceed to Payment
+                      onClick={handlePayment}
+                      sx={{ mt: 3, py: 1.5 }}>
+                      Place Order
                     </Button>
-                  </Box>
-                </Box>
+                  </Grid>
+                </Grid>
               </Box>
             </>
           )}

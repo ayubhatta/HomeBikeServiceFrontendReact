@@ -1,7 +1,11 @@
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   Button,
   Card,
@@ -33,8 +37,8 @@ const Marketplace = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [priceRange, setPriceRange] = useState([0, 2000]);
-  const [bikeFilters, setBikeFilters] = useState([]);
-  const [selectedBikes, setSelectedBikes] = useState({});
+  const [bikeFilters, setBikeFilters] = useState({});
+  const [selectedBikeModels, setSelectedBikeModels] = useState({});
 
   const [sortBy, setSortBy] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,42 +52,59 @@ const Marketplace = () => {
       try {
         const response = await getAllBikePartsApi();
 
-        // Extract all parts from the grouped data and prevent duplicates
+        // Extract unique parts from the nested structure
         const allParts = [];
-        const bikesSet = new Set();
         const uniquePartIds = new Set();
+        const bikeBrandsAndModels = {};
 
-        response.data.data.forEach((bikeGroup) => {
-          bikesSet.add(bikeGroup.bikeName);
+        response.data.data.forEach((brandGroup) => {
+          const brand = brandGroup.bikeBrand;
+          bikeBrandsAndModels[brand] = [];
 
-          bikeGroup.parts.forEach((part) => {
-            // Only add the part if we haven't seen this ID before
-            if (!uniquePartIds.has(part.id)) {
-              uniquePartIds.add(part.id);
+          brandGroup.bikeModels.forEach((modelGroup) => {
+            const model = modelGroup.bikeModel;
+            bikeBrandsAndModels[brand].push(model);
 
-              // Add bike compatibility information to each part
-              allParts.push({
-                ...part,
-                partImage: part.partImageUrl, // Map the image URL to match your existing code
-                category: bikeGroup.bikeName, // Using bike name as category for now
-                inStock: part.quantity > 0,
-              });
-            }
+            modelGroup.parts.forEach((part) => {
+              // Only add the part if we haven't seen this ID before
+              if (!uniquePartIds.has(part.id)) {
+                uniquePartIds.add(part.id);
+
+                // Process compatibleBikes to flatten the structure for filtering
+                const flatCompatibleBikes = [];
+                if (part.compatibleBikes) {
+                  Object.entries(part.compatibleBikes).forEach(
+                    ([brand, models]) => {
+                      models.forEach((model) => {
+                        flatCompatibleBikes.push(`${brand} - ${model}`);
+                      });
+                    }
+                  );
+                }
+
+                // Add processed part to allParts
+                allParts.push({
+                  ...part,
+                  partImage: part.partImageUrl,
+                  flatCompatibleBikes,
+                  inStock: part.quantity > 0,
+                });
+              }
+            });
           });
         });
 
         setProducts(allParts);
+        setBikeFilters(bikeBrandsAndModels);
 
-        // Set up bike filters and initialize selectedBikes object
-        const bikes = [...bikesSet];
-        setBikeFilters(bikes);
-
-        // Initialize selectedBikes with all bikes set to false
-        const initialSelectedBikes = {};
-        bikes.forEach((bike) => {
-          initialSelectedBikes[bike] = false;
+        // Initialize selectedBikeModels with all bikes set to false
+        const initialSelectedBikeModels = {};
+        Object.entries(bikeBrandsAndModels).forEach(([brand, models]) => {
+          models.forEach((model) => {
+            initialSelectedBikeModels[`${brand} - ${model}`] = false;
+          });
         });
-        setSelectedBikes(initialSelectedBikes);
+        setSelectedBikeModels(initialSelectedBikeModels);
 
         // Find max price for slider
         const maxPrice = Math.max(
@@ -123,17 +144,17 @@ const Marketplace = () => {
           product.price >= priceRange[0] && product.price <= priceRange[1]
       );
 
-      // Apply bike filter - check if any bikes are selected
-      const selectedBikesList = Object.keys(selectedBikes).filter(
-        (bike) => selectedBikes[bike]
+      // Apply bike model filter - check if any bike models are selected
+      const selectedBikeModelsList = Object.keys(selectedBikeModels).filter(
+        (bikeModel) => selectedBikeModels[bikeModel]
       );
 
-      if (selectedBikesList.length > 0) {
+      if (selectedBikeModelsList.length > 0) {
         result = result.filter((product) => {
           return (
-            product.compatibleBikes &&
-            selectedBikesList.some((bike) =>
-              product.compatibleBikes.includes(bike)
+            product.flatCompatibleBikes &&
+            selectedBikeModelsList.some((bikeModel) =>
+              product.flatCompatibleBikes.includes(bikeModel)
             )
           );
         });
@@ -157,11 +178,11 @@ const Marketplace = () => {
     };
 
     applyFilters();
-  }, [products, searchQuery, priceRange, sortBy, selectedBikes]);
+  }, [products, searchQuery, priceRange, sortBy, selectedBikeModels]);
 
-  const handleBikeCheckboxChange = (event) => {
-    setSelectedBikes({
-      ...selectedBikes,
+  const handleBikeModelCheckboxChange = (event) => {
+    setSelectedBikeModels({
+      ...selectedBikeModels,
       [event.target.name]: event.target.checked,
     });
   };
@@ -193,12 +214,12 @@ const Marketplace = () => {
 
   const handleClearFilters = () => {
     setSearchQuery('');
-    // Reset all bike checkboxes
-    const resetBikes = {};
-    Object.keys(selectedBikes).forEach((bike) => {
-      resetBikes[bike] = false;
+    // Reset all bike model checkboxes
+    const resetBikeModels = {};
+    Object.keys(selectedBikeModels).forEach((bikeModel) => {
+      resetBikeModels[bikeModel] = false;
     });
-    setSelectedBikes(resetBikes);
+    setSelectedBikeModels(resetBikeModels);
     setPriceRange([
       0,
       Math.max(...products.map((product) => product.price), 2000),
@@ -211,7 +232,7 @@ const Marketplace = () => {
     return (
       searchQuery !== '' ||
       sortBy !== '' ||
-      Object.values(selectedBikes).some((value) => value === true)
+      Object.values(selectedBikeModels).some((value) => value === true)
     );
   };
 
@@ -348,29 +369,51 @@ const Marketplace = () => {
 
               <Divider sx={{ my: 2 }} />
 
-              {/* Bike Checkboxes */}
+              {/* Bike Brand and Model Checkboxes - using Accordion */}
               <Typography
-                variant='subtitle2'
+                variant='subtitle1'
                 gutterBottom>
-                Compatible Bike
+                <strong>Compatible Bikes</strong>
               </Typography>
               <FormControl
                 component='fieldset'
                 sx={{ mb: 3, width: '100%' }}>
                 <FormGroup>
-                  {bikeFilters.map((bike) => (
-                    <FormControlLabel
-                      key={bike}
-                      control={
-                        <Checkbox
-                          checked={selectedBikes[bike] || false}
-                          onChange={handleBikeCheckboxChange}
-                          name={bike}
-                          size='small'
-                        />
-                      }
-                      label={bike}
-                    />
+                  {/* Use accordions to group by bike brand */}
+                  {Object.entries(bikeFilters).map(([brand, models]) => (
+                    <Accordion
+                      key={brand}
+                      disableGutters
+                      elevation={0}>
+                      <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        sx={{ p: 0, minHeight: 40 }}>
+                        <Typography
+                          variant='body1'
+                          fontWeight='medium'>
+                          {brand}
+                        </Typography>
+                      </AccordionSummary>
+                      <AccordionDetails sx={{ p: 0, pl: 2 }}>
+                        {models.map((model) => (
+                          <FormControlLabel
+                            key={`${brand} - ${model}`}
+                            control={
+                              <Checkbox
+                                checked={
+                                  selectedBikeModels[`${brand} - ${model}`] ||
+                                  false
+                                }
+                                onChange={handleBikeModelCheckboxChange}
+                                name={`${brand} - ${model}`}
+                                size='small'
+                              />
+                            }
+                            label={model}
+                          />
+                        ))}
+                      </AccordionDetails>
+                    </Accordion>
                   ))}
                 </FormGroup>
               </FormControl>
@@ -486,8 +529,8 @@ const Marketplace = () => {
                           color='text.secondary'
                           sx={{ mb: 1 }}>
                           {/* Display compatible bikes as chips */}
-                          {product.compatibleBikes &&
-                            product.compatibleBikes.map((bike) => (
+                          {product.flatCompatibleBikes &&
+                            product.flatCompatibleBikes.map((bike) => (
                               <Chip
                                 key={bike}
                                 label={bike}

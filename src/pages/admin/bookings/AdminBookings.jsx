@@ -237,6 +237,12 @@ const AdminBookings = () => {
   const isBookingCanceled = (status) => {
     return status?.toLowerCase() === 'canceled';
   };
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter mechanics based on search query
+  const filteredMechanics = mechanics.filter((mechanic) =>
+    mechanic.fullName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const statuses = ['all', 'pending', 'complete', 'canceled'];
 
@@ -301,12 +307,14 @@ const AdminBookings = () => {
                 <div className='tw-mb-4'>
                   <input
                     type='text'
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder='Search mechanics...'
                     className='tw-w-full tw-px-4 tw-py-2 tw-rounded-lg tw-bg-gray-700 tw-text-white tw-border tw-border-gray-600 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500'
                   />
                 </div>
                 <div className='tw-mb-6 tw-max-h-96 tw-overflow-y-auto tw-border tw-border-gray-700 tw-rounded-lg'>
-                  {mechanics.map((mechanic) => (
+                  {filteredMechanics.map((mechanic) => (
                     <div
                       key={mechanic.mechanicId}
                       onClick={() => handleMechanicSelect(mechanic)}

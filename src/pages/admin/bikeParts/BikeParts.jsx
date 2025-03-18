@@ -14,7 +14,7 @@ const BikePartsDashboard = () => {
     price: '',
     partImage: null,
     quantity: '',
-    compatibleBikes: '',
+    CompatibleBikesJson: '',
   });
   const [errors, setErrors] = useState({});
   const [previewImage, setPreviewImage] = useState(null);
@@ -23,31 +23,53 @@ const BikePartsDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isTableLoading, setIsTableLoading] = useState(true);
 
+  const processBikePartsResponse = (response) => {
+    // Create a Map to store unique parts by ID
+    const uniquePartsMap = new Map();
+
+    // First level: loop through brands
+    response.data.forEach((brandData) => {
+      const bikeBrand = brandData.bikeBrand;
+
+      // Second level: loop through models for each brand
+      brandData.bikeModels.forEach((modelData) => {
+        const bikeModel = modelData.bikeModel;
+
+        // Third level: loop through parts for each model
+        modelData.parts.forEach((part) => {
+          // If this part ID isn't in our map yet, add it
+          if (!uniquePartsMap.has(part.id)) {
+            // Format the compatible bikes as an array for display
+            const compatibleBikesArray = [];
+
+            // Convert the nested compatibleBikes object to a flat array
+            Object.entries(part.compatibleBikes).forEach(([brand, models]) => {
+              models.forEach((model) => {
+                compatibleBikesArray.push(`${brand} ${model}`);
+              });
+            });
+
+            uniquePartsMap.set(part.id, {
+              ...part,
+              _id: part.id, // Map id to _id to match the existing code
+              partImage: part.partImageUrl, // Map partImageUrl to partImage
+              compatibleBikes: compatibleBikesArray, // Store as array for display
+            });
+          }
+        });
+      });
+    });
+
+    // Convert the Map values to an array
+    return Array.from(uniquePartsMap.values());
+  };
+
   const fetchBikeParts = useCallback(() => {
     setIsTableLoading(true);
     getAllBikePartsApi()
       .then((res) => {
         if (res.status === 200) {
-          // Create a Map to store unique parts by ID
-          const uniquePartsMap = new Map();
-
-          // Process each bike group and its parts
-          res.data.data.forEach((bikeGroup) => {
-            bikeGroup.parts.forEach((part) => {
-              // If this part ID isn't in our map yet, add it
-              if (!uniquePartsMap.has(part.id)) {
-                uniquePartsMap.set(part.id, {
-                  ...part,
-                  _id: part.id, // Map id to _id to match the existing code
-                  partImage: part.partImageUrl, // Map partImageUrl to partImage
-                  bikeName: bikeGroup.bikeName,
-                });
-              }
-            });
-          });
-
-          // Convert the Map values to an array
-          const uniqueParts = Array.from(uniquePartsMap.values());
+          const uniqueParts = processBikePartsResponse(res.data);
           setBikeParts(uniqueParts);
         }
       })
@@ -102,15 +124,14 @@ const BikePartsDashboard = () => {
     if (!validate()) return;
 
     // Parse comma-separated bikes into an array
-    const bikesArray = bikePartData.compatibleBikes
-      .split(',')
+    const bikesArray = bikePartData.CompatibleBikesJson.split(',')
       .map((bike) => bike.trim())
       .filter((bike) => bike.length > 0);
 
     if (bikesArray.length === 0) {
       setErrors((prev) => ({
         ...prev,
-        compatibleBikes: 'At least one compatible bike is required',
+        CompatibleBikesJson: 'At least one compatible bike is required',
       }));
       return;
     }
@@ -175,7 +196,7 @@ const BikePartsDashboard = () => {
       price: '',
       quantity: '',
       partImage: null,
-      compatibleBikes: '',
+      CompatibleBikesJson: '',
     });
     setPreviewImage(null);
     setErrors({});
@@ -313,8 +334,8 @@ const BikePartsDashboard = () => {
                 </label>
                 <input
                   type='text'
-                  name='compatibleBikes'
-                  value={bikePartData.compatibleBikes}
+                  name='CompatibleBikesJson'
+                  value={bikePartData.CompatibleBikesJson}
                   onChange={handleInputChange}
                   placeholder='Honda, Benelli, Dominar, etc.'
                   className='w-full p-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500'
