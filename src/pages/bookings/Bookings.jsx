@@ -179,7 +179,7 @@ const Bookings = () => {
       <div className='md:flex'>
         <div className='md:flex-shrink-0 relative'>
           <img
-            className='h-48 w-full object-cover md:w-48'
+            className='h-48 w-full object-fit md:w-48'
             src={booking.bikeDetails.imageUrl}
             alt={booking.bikeDetails.bikeName}
           />
