@@ -1,5 +1,5 @@
 import axios from 'axios';
-//const baseURL = 'https://192.168.1.195:7080';
+//const baseURL = 'http://192.168.1.69:4056';
 const baseURL = 'https://api-rj9q.onrender.com';
 // Creating backend config
 const Api = axios.create({

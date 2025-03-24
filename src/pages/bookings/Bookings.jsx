@@ -592,11 +592,6 @@ const Bookings = () => {
                       Rs {calculateTotal()}
                     </p>
                   </div>
-                  <button
-                    onClick={() => handlePayment(calculateTotal())}
-                    className='px-6 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300 ease-in-out transform hover:-translate-y-1'>
-                    Proceed to Payment
-                  </button>
                 </div>
               </div>
             )}

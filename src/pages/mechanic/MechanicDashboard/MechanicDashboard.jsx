@@ -114,7 +114,7 @@ function MechanicDashboard() {
       // Cost information
       serviceCost: booking.total || bike.bikePrice,
       partsCost: partsCost,
-      totalCost: (booking.total || bike.bikePrice) + partsCost,
+      totalCost: (booking.total || bike.bikePrice),
 
       // Parts information
       parts: user.cart || [],
@@ -127,8 +127,6 @@ function MechanicDashboard() {
           Phone Number : ${user.phoneNumber} 
           Email : ${user.email}
           Estimated Service Cost: Rs ${booking.total || bike.bikePrice} 
-          Parts Cost: Rs ${partsCost}
-          Total Cost: Rs ${(booking.total || bike.bikePrice) + partsCost}
           `,
 
       // Original data preserved for reference if needed
@@ -781,32 +779,8 @@ function MechanicDashboard() {
                             </Grid>
                             <Grid
                               item
-                              xs={6}>
-                              <Typography variant='subtitle2'>
-                                Parts Cost
-                              </Typography>
-                              <Typography variant='body1'>
-                                Rs{selectedTask.partsCost}
-                              </Typography>
-                            </Grid>
-                            <Grid
-                              item
                               xs={12}>
                               <Divider sx={{ my: 1 }} />
-                              <Box
-                                display='flex'
-                                justifyContent='space-between'>
-                                <Typography
-                                  variant='subtitle1'
-                                  fontWeight='bold'>
-                                  Total Cost
-                                </Typography>
-                                <Typography
-                                  variant='subtitle1'
-                                  fontWeight='bold'>
-                                  Rs{selectedTask.totalCost}
-                                </Typography>
-                              </Box>
                             </Grid>
                           </Grid>
                         </AccordionDetails>
@@ -876,20 +850,6 @@ function MechanicDashboard() {
                               ))}
                             </List>
                             <Divider sx={{ my: 1 }} />
-                            <Box
-                              display='flex'
-                              justifyContent='space-between'>
-                              <Typography
-                                variant='subtitle1'
-                                fontWeight='bold'>
-                                Parts Total
-                              </Typography>
-                              <Typography
-                                variant='subtitle1'
-                                fontWeight='bold'>
-                                Rs{selectedTask.partsCost}
-                              </Typography>
-                            </Box>
                           </AccordionDetails>
                         </Accordion>
                       </Grid>
