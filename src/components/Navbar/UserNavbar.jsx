@@ -1,23 +1,43 @@
 import { motion } from 'framer-motion';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaBars, FaShoppingCart, FaTimes, FaUser } from 'react-icons/fa';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { getCartApi } from '../../api/api'; // Import your API function
 
 const UserNavbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
 
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
   const navigate = useNavigate();
 
-  const handleSearchClick = () => {
-    navigate('/search');
-  };
-
   const handleCartClick = () => {
     navigate('/user/cart');
   };
+
+  useEffect(() => {
+    const fetchCartData = async () => {
+      try {
+        const response = await getCartApi();
+        if (response.status === 200) {
+          const pendingItems = response.data.carts.filter(
+            (item) => !item.isPaymentDone
+          );
+          const totalQuantity = pendingItems.reduce(
+            (sum, item) => sum + item.quantity,
+            0
+          );
+          setCartCount(totalQuantity);
+        }
+      } catch (error) {
+        console.error('Error fetching cart data:', error);
+      }
+    };
+
+    fetchCartData();
+  }, []);
 
   return (
     <>
@@ -83,8 +103,13 @@ const UserNavbar = () => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleCartClick}
-                className='text-white hover:text-blue-200 transition duration-300 bg-blue-700 hover:bg-blue-600 p-2 rounded-full'>
+                className='relative text-white hover:text-blue-200 transition duration-300 bg-blue-700 hover:bg-blue-600 p-2 rounded-full'>
                 <FaShoppingCart className='h-5 w-5' />
+                {cartCount > 0 && (
+                  <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full'>
+                    {cartCount}
+                  </span>
+                )}
               </motion.button>
 
               <div className='relative'>
@@ -139,62 +164,6 @@ const UserNavbar = () => {
             </div>
           </div>
         </div>
-
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className='md:hidden mt-2 bg-blue-700 rounded-b-lg'>
-            <div className='px-2 pt-2 pb-3 space-y-1 sm:px-3'>
-              <NavLink
-                to='/homepage'
-                className={({ isActive }) =>
-                  isActive
-                    ? 'block px-3 py-2 rounded-md text-white bg-blue-800 font-medium'
-                    : 'block px-3 py-2 rounded-md text-white hover:bg-blue-500 hover:text-white transition duration-300'
-                }>
-                Home
-              </NavLink>
-              <NavLink
-                to='/user/booking'
-                className={({ isActive }) =>
-                  isActive
-                    ? 'block px-3 py-2 rounded-md text-white bg-blue-800 font-medium'
-                    : 'block px-3 py-2 rounded-md text-white hover:bg-blue-500 hover:text-white transition duration-300'
-                }>
-                Bookings
-              </NavLink>
-              <NavLink
-                to='/bike'
-                className={({ isActive }) =>
-                  isActive
-                    ? 'block px-3 py-2 rounded-md text-white bg-blue-800 font-medium'
-                    : 'block px-3 py-2 rounded-md text-white hover:bg-blue-500 hover:text-white transition duration-300'
-                }>
-                Book Now
-              </NavLink>
-              <NavLink
-                to='/marketplace'
-                className={({ isActive }) =>
-                  isActive
-                    ? 'block px-3 py-2 rounded-md text-white bg-blue-800 font-medium'
-                    : 'block px-3 py-2 rounded-md text-white hover:bg-blue-500 hover:text-white transition duration-300'
-                }>
-                Bike Parts
-              </NavLink>
-              <NavLink
-                to='/contactus'
-                className={({ isActive }) =>
-                  isActive
-                    ? 'block px-3 py-2 rounded-md text-white bg-blue-800 font-medium'
-                    : 'block px-3 py-2 rounded-md text-white hover:bg-blue-500 hover:text-white transition duration-300'
-                }>
-                Contact Us
-              </NavLink>
-            </div>
-          </motion.div>
-        )}
       </nav>
     </>
   );

@@ -199,6 +199,10 @@ const Marketplace = () => {
       if (response?.data.success) {
         toast.success(`${product.partName} added to cart successfully`);
         setCartCount((prevCount) => prevCount + 1);
+        // reload window after 2 seconds
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
       } else {
         toast.error(response?.data.message || 'Failed to add to cart.');
       }
