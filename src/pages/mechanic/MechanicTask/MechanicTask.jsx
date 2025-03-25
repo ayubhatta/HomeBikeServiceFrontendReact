@@ -129,7 +129,7 @@ const MechanicTask = () => {
         return 'info';
       case 'pending':
         return 'warning';
-      case 'Cancelled':
+      case 'canceled':
         return 'error';
       default:
         return 'default';
@@ -234,7 +234,7 @@ const MechanicTask = () => {
                 <MenuItem value='pending'>Pending</MenuItem>
                 <MenuItem value='In-Progress'>In Progress</MenuItem>
                 <MenuItem value='Complete'>Complete</MenuItem>
-                <MenuItem value='Cancelled'>Cancelled</MenuItem>
+                <MenuItem value='canceled'>Canceled</MenuItem>
               </Select>
             </FormControl>
 
