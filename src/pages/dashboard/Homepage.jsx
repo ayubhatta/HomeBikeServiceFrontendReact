@@ -244,7 +244,7 @@ const Homepage = () => {
             />
             <FeatureCard
               image='assets/images/service.jpg'
-              title='Bike Repairs'
+              title='Bike Cleaning'
               description='Quick and professional repair services to get you back on the road as soon as possible.'
               buttonText='Book Repair'
               onClick={handleBookNow}

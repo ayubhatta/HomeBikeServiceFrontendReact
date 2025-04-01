@@ -165,6 +165,68 @@ const UserNavbar = () => {
           </div>
         </div>
       </nav>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className='md:hidden bg-blue-800 shadow-lg'>
+          <div className='px-4 pt-2 pb-4 space-y-2'>
+            <NavLink
+              to='/homepage'
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                isActive
+                  ? 'block py-2 px-4 text-white font-bold border-l-4 border-white bg-blue-700'
+                  : 'block py-2 px-4 text-white hover:bg-blue-700 transition duration-300'
+              }>
+              Home
+            </NavLink>
+            <NavLink
+              to='/user/booking'
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                isActive
+                  ? 'block py-2 px-4 text-white font-bold border-l-4 border-white bg-blue-700'
+                  : 'block py-2 px-4 text-white hover:bg-blue-700 transition duration-300'
+              }>
+              Bookings
+            </NavLink>
+            <NavLink
+              to='/bike'
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                isActive
+                  ? 'block py-2 px-4 text-white font-bold border-l-4 border-white bg-blue-700'
+                  : 'block py-2 px-4 text-white hover:bg-blue-700 transition duration-300'
+              }>
+              Book Now
+            </NavLink>
+            <NavLink
+              to='/marketplace'
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                isActive
+                  ? 'block py-2 px-4 text-white font-bold border-l-4 border-white bg-blue-700'
+                  : 'block py-2 px-4 text-white hover:bg-blue-700 transition duration-300'
+              }>
+              Bike Parts
+            </NavLink>
+            <NavLink
+              to='/contactus'
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                isActive
+                  ? 'block py-2 px-4 text-white font-bold border-l-4 border-white bg-blue-700'
+                  : 'block py-2 px-4 text-white hover:bg-blue-700 transition duration-300'
+              }>
+              Contact Us
+            </NavLink>
+          </div>
+        </motion.div>
+      )}
     </>
   );
 };
