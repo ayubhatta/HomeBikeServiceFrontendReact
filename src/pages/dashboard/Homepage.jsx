@@ -236,21 +236,21 @@ const Homepage = () => {
           </motion.div>
           <div className='tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-8'>
             <FeatureCard
-              image='assets/images/service.jpg'
+              image='assets/images/BikeService.jpg'
               title='Bike Service'
               description='Expert maintenance and tune-ups to keep your bike running smoothly and safely.'
               buttonText='Book Now'
               onClick={handleBookNow}
             />
             <FeatureCard
-              image='assets/images/service.jpg'
+              image='assets/images/BikeCleaning.jpg'
               title='Bike Cleaning'
               description='Quick and professional repair services to get you back on the road as soon as possible.'
-              buttonText='Book Repair'
+              buttonText='Book Cleaning'
               onClick={handleBookNow}
             />
             <FeatureCard
-              image='assets/images/service.jpg'
+              image='assets/images/BikeParts.png'
               title='Bike Parts'
               description='Quality bike parts and accessories to upgrade your ride and enhance performance.'
               buttonText='View Bike Parts'
@@ -286,7 +286,7 @@ const Homepage = () => {
             <TestimonialCard
               text='I was impressed with how quickly they responded to my service request. My bike has never performed better!'
               author='Emma Johnson'
-              role='Cycling Enthusiast'
+              role='Bicycle Enthusiast'
             />
             <TestimonialCard
               text='The quality of service and parts is exceptional. I recommend Ride Revive to all my cycling friends.'
