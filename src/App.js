@@ -23,6 +23,7 @@ import ConfirmBooking from './pages/confirmBooking/ConfirmBooking';
 import ConfirmPayment from './pages/confirmPayment/ConfirmPayment';
 import ContactUs from './pages/contactUs/ContactUs';
 import Homepage from './pages/dashboard/Homepage';
+import LoggeedOutUserHomepage from './pages/dashboard/LoggedoutUserDashbaord';
 import Login from './pages/login/login';
 import Marketplace from './pages/marketplace/Marketplace';
 import MechanicDashboard from './pages/mechanic/MechanicDashboard/MechanicDashboard';
@@ -46,7 +47,15 @@ function App() {
       <Routes>
         <Route
           path='/'
-          element={user?.isAdmin ? <Dashboard /> : <Homepage />}
+          element={
+            user?.isAdmin ? (
+              <Dashboard />
+            ) : user ? (
+              <Homepage />
+            ) : (
+              <LoggeedOutUserHomepage />
+            )
+          }
         />
         <Route
           path='/register'

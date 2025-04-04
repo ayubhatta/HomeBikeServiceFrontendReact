@@ -63,7 +63,7 @@ const StatCard = ({ number, title, icon }) => (
   </motion.div>
 );
 
-const Homepage = () => {
+const LoggeedOutUserHomepage = () => {
   const handleBookNow = () => {
     window.location.href = '/bike';
   };
@@ -74,6 +74,7 @@ const Homepage = () => {
 
   return (
     <div className='tw-bg-gray-50 tw-min-h-screen'>
+      <LoggedOutNavbar />
       {/* Hero Section */}
       <section className='tw-bg-gradient-to-r tw-from-blue-600 tw-to-blue-800 tw-text-white'>
         <div className='tw-container tw-mx-auto tw-px-4 tw-py-20 md:tw-py-28'>
@@ -321,4 +322,4 @@ const Homepage = () => {
   );
 };
 
-export default Homepage;
+export default LoggeedOutUserHomepage;

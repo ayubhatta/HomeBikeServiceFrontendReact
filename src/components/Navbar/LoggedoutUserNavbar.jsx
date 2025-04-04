@@ -48,7 +48,7 @@ const LoggedOutNavbar = () => {
         </div>
       </nav>
 
-      {/* Mobile Menu */}
+    
     </>
   );
 };
