@@ -8,6 +8,11 @@ import {
   Checkbox,
   CircularProgress,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   FormControlLabel,
   Grid,
@@ -45,6 +50,8 @@ const ConfirmBooking = () => {
     severity: 'success',
   });
   const [timeError, setTimeError] = useState(false);
+  // Dialog state for terms and conditions
+  const [termsDialogOpen, setTermsDialogOpen] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -84,6 +91,23 @@ const ConfirmBooking = () => {
 
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
+  };
+
+  // Function to open terms and conditions dialog
+  const openTermsDialog = (e) => {
+    e.preventDefault();
+    setTermsDialogOpen(true);
+  };
+
+  // Function to close terms and conditions dialog
+  const closeTermsDialog = () => {
+    setTermsDialogOpen(false);
+  };
+
+  // Function to accept terms and close dialog
+  const acceptTerms = () => {
+    setIsChecked(true);
+    setTermsDialogOpen(false);
   };
 
   const params = useParams();
@@ -254,6 +278,8 @@ const ConfirmBooking = () => {
                       value={formData.bookingDate}
                       onChange={handleDateChange}
                       minDate={today}
+                      sx={{ width: '100%' }}
+                      required
                     />
                   </Grid>
                   <Grid
@@ -264,6 +290,7 @@ const ConfirmBooking = () => {
                       label='Booking Time (8am - 8pm only)'
                       value={formData.bookingTime}
                       onChange={handleTimeChange}
+                      sx={{ width: '100%' }}
                       slotProps={{
                         textField: {
                           fullWidth: true,
@@ -322,7 +349,9 @@ const ConfirmBooking = () => {
                           <Link
                             href='#'
                             color='primary'
-                            underline='hover'>
+                            underline='hover'
+                            onClick={openTermsDialog}
+                            sx={{ cursor: 'pointer' }}>
                             Terms and Conditions
                           </Link>
                         </Typography>
@@ -404,6 +433,145 @@ const ConfirmBooking = () => {
             </CardContent>
           </Card>
         </Box>
+
+        {/* Terms and Conditions Dialog */}
+        <Dialog
+          open={termsDialogOpen}
+          onClose={closeTermsDialog}
+          maxWidth='md'
+          scroll='paper'
+          aria-labelledby='terms-dialog-title'
+          aria-describedby='terms-dialog-description'>
+          <DialogTitle
+            id='terms-dialog-title'
+            sx={{ fontWeight: 'bold' }}>
+            Ride Revive - Terms and Conditions
+          </DialogTitle>
+          <DialogContent dividers>
+            <DialogContentText
+              id='terms-dialog-description'
+              tabIndex={-1}>
+              <Typography
+                variant='h6'
+                gutterBottom>
+                1. SERVICE BOOKING
+              </Typography>
+              <Typography paragraph>
+                1.1. By booking a service with Ride Revive, you agree to provide
+                accurate information about your bike and service requirements.
+              </Typography>
+              <Typography paragraph>
+                1.2. Booking is subject to availability of service slots at your
+                chosen date and time.
+              </Typography>
+              <Typography paragraph>
+                1.3. Ride Revive reserves the right to reschedule your booking
+                if necessary, with prior notice.
+              </Typography>
+
+              <Typography
+                variant='h6'
+                gutterBottom>
+                2. SERVICE AND REPAIRS
+              </Typography>
+              <Typography paragraph>
+                2.1. Our mechanics will perform only the services agreed upon
+                during booking.
+              </Typography>
+              <Typography paragraph>
+                2.2. Additional repairs identified during service will be
+                communicated to you for approval before proceeding.
+              </Typography>
+              <Typography paragraph>
+                2.3. Ride Revive is not responsible for any pre-existing
+                conditions or issues not directly related to the service
+                provided.
+              </Typography>
+
+              <Typography
+                variant='h6'
+                gutterBottom>
+                3. PAYMENT TERMS
+              </Typography>
+              <Typography paragraph>
+                3.1. Full payment is required upon completion of service.
+              </Typography>
+              <Typography paragraph>
+                3.2. We accept cash, credit/debit cards, and online payments.
+              </Typography>
+              <Typography paragraph>
+                3.3. Prices are subject to change without prior notice, but
+                confirmed bookings will be honored at the quoted price.
+              </Typography>
+
+              <Typography
+                variant='h6'
+                gutterBottom>
+                4. CANCELLATION POLICY
+              </Typography>
+              <Typography paragraph>
+                4.1. Cancellations made at least 24 hours before the scheduled
+                service time will not incur charges.
+              </Typography>
+              <Typography paragraph>
+                4.2. Late cancellations (less than 24 hours) may incur a
+                cancellation fee of up to 25% of the booked service.
+              </Typography>
+              <Typography paragraph>
+                4.3. No-shows will be charged a fee equivalent to 50% of the
+                booked service.
+              </Typography>
+
+              <Typography
+                variant='h6'
+                gutterBottom>
+                5. WARRANTY
+              </Typography>
+              <Typography paragraph>
+                5.1. All parts and labor are warranted for 30 days from the date
+                of service.
+              </Typography>
+              <Typography paragraph>
+                5.2. The warranty does not cover damage resulting from
+                accidents, misuse, neglect, or further modifications.
+              </Typography>
+              <Typography paragraph>
+                5.3. To claim warranty service, you must present your original
+                receipt and the bike in question.
+              </Typography>
+
+              <Typography
+                variant='h6'
+                gutterBottom>
+                6. PRIVACY POLICY
+              </Typography>
+              <Typography paragraph>
+                6.1. We collect and process personal data in accordance with our
+                Privacy Policy.
+              </Typography>
+              <Typography paragraph>
+                6.2. Your information will be used only for service-related
+                communications and will not be shared with third parties except
+                as required by law.
+              </Typography>
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={closeTermsDialog}
+              color='primary'
+              variant='outlined'>
+              Close
+            </Button>
+            <Button
+              onClick={acceptTerms}
+              color='primary'
+              variant='contained'
+              autoFocus>
+              Accept Terms
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         <Snackbar
           open={snackbar.open}
