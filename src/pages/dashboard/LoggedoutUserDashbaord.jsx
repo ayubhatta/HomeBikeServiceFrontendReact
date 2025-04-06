@@ -65,12 +65,12 @@ const StatCard = ({ number, title, icon }) => (
 
 const LoggeedOutUserHomepage = () => {
   const handleBookNow = () => {
-    window.location.href = '/bike';
+    window.location.href = '/login';
   };
 
-  const handleBikeSpareParts = () => {
-    window.location.href = '/marketplace';
-  };
+  // const handleBikeSpareParts = () => {
+  //   window.location.href = '/marketplace';
+  // };
 
   return (
     <div className='tw-bg-gray-50 tw-min-h-screen'>
@@ -256,7 +256,7 @@ const LoggeedOutUserHomepage = () => {
               title='Bike Parts'
               description='Quality bike parts and accessories to upgrade your ride and enhance performance.'
               buttonText='View Bike Parts'
-              onClick={handleBikeSpareParts}
+              onClick={handleBookNow}
             />
           </div>
         </div>
