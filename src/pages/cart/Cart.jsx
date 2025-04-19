@@ -280,11 +280,7 @@ const Cart = () => {
     productName: 'Bike Parts Order',
     productUrl: window.location.origin + '/cart',
     paymentPreference: [
-      'KHALTI',
-      'EBANKING',
-      'MOBILE_BANKING',
-      'CONNECT_IPS',
-      'SCT',
+      'KHALTI'
     ],
     eventHandler: {
       onSuccess(payload) {
