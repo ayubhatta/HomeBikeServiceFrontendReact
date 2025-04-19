@@ -74,11 +74,12 @@ const Register = () => {
         if (response.data.success) {
           toast.success(response.data.message);
           window.location.href = '/login';
-        } else {
+        } 
+        else {
           toast.error(response.data.message);
         }
       } catch (error) {
-        toast.error('An error occurred. Please try again.');
+        toast.error(error.response.data.message);
       } finally {
         setIsLoading(false);
       }

@@ -203,7 +203,7 @@ const Dashboard = () => {
                       </td>
                       <td className='py-2 px-4'>{bike.bikeName}</td>
                       <td className='py-2 px-4'>{bike.bikeModel}</td>
-                      <td className='py-2 px-4'>${bike.bikePrice}</td>
+                      <td className='py-2 px-4'>Rs {bike.bikePrice}</td>
                     </tr>
                   ))}
                 </tbody>
