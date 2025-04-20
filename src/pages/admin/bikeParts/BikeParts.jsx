@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
   createBikePartsApi,
-  deleteBikeApi,
+  deleteBikePartsApi,
   getAllBikePartsApi,
 } from '../../../api/api';
 
@@ -173,7 +173,7 @@ const BikePartsDashboard = () => {
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete?')) {
       setIsTableLoading(true);
-      deleteBikeApi(id)
+      deleteBikePartsApi(id)
         .then((res) => {
           if (res.status === 201) {
             toast.success(res.data.message);

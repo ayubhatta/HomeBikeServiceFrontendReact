@@ -107,6 +107,11 @@ export const updateBikePartsApi = (id, data) =>
 export const getSingleBikeParts = (id) =>
   Api.get(`/api/bikeParts/${id}`, config);
 
+// delete bike api
+export const deleteBikePartsApi = (id) =>
+  Api.delete(`api/bikeParts/${id}`, config);
+
+
 // ================================ Cart Api =============
 export const addToCartApi = (data) => Api.post('/api/cart/add', data, config);
 
