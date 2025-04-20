@@ -113,8 +113,8 @@ const BikePartsDashboard = () => {
       newErrors.price = 'Bike Part Price is required';
     if (!bikePartData.partImage)
       newErrors.partImage = 'Bike Part Image is required';
-    if (!bikePartData.compatibleBikes.trim())
-      newErrors.compatibleBikes = 'At least one compatible bike is required';
+    if (!bikePartData.CompatibleBikesJson.trim())
+      newErrors.CompatibleBikesJson = 'At least one compatible bike is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
