@@ -7,7 +7,7 @@ const UserRoutes = () => {
   return user != null && user.role === 'User' ? (
     <Outlet />
   ) : (
-    <Navigate to={'/login'} />
+    <Navigate to={'/404notfound'} />
   );
 };
 

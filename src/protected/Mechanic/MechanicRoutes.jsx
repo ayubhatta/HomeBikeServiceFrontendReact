@@ -6,7 +6,7 @@ const MechanicRoutes = () => {
   return user != null && user.role === 'Mechanic' ? (
     <Outlet />
   ) : (
-    <Navigate to={'/login'} />
+    <Navigate to={'/404notfound'} />
   );
 };
 

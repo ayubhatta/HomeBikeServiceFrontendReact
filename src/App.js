@@ -4,6 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import BarChat from './components/BarChart';
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
+import PageNotFound from './components/Navbar/PageNotFound';
 import AboutUs from './pages/aboutUs/AboutUs';
 import BikeDashboard from './pages/admin/Bike/BikeDashboard';
 import UpdateBike from './pages/admin/Bike/UpdateBike';
@@ -66,15 +67,19 @@ function App() {
           element={<Login />}
         />
         <Route
+          path='/404notfound'
+          element={<PageNotFound />}
+        />
+        <Route
           path='/footer'
           element={<Footer />}
         />{' '}
-        <Route
-          path='/marketplace'
-          element={<Marketplace />}
-        />
         {/* =========================== USER ROUTE ============================ */}
         <Route element={<UserRoutes />}>
+          <Route
+            path='/marketplace'
+            element={<Marketplace />}
+          />
           <Route
             path='/homepage'
             element={<Homepage />}

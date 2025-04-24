@@ -37,7 +37,8 @@ export const AppBarComponent = ({ handleDrawerToggle }) => (
       <Typography
         variant='h6'
         component='div'
-        sx={{ flexGrow: 1 }}>
+        sx={{ flexGrow: 1 }}
+        onClick={() => (window.location.href = '/mechanic')}>
         Mechanic Dashboard
       </Typography>
     </Toolbar>
