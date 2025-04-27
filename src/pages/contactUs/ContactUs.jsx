@@ -11,6 +11,7 @@ const ContactUs = () => {
   const [rating, setRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
+  const [error, setError] = useState(null);
 
   // Primary color palette
   const primaryColor = '#3b82f6'; // Bright blue as primary color
@@ -33,12 +34,15 @@ const ContactUs = () => {
         throw new Error('User ID is missing');
       }
       const response = await sendFeedbackApi(feedbackData);
-      console.log('Form submitted:', response.data);
       setFormData({ subject: '', message: '' });
       setRating(0);
       setSubmitStatus('success');
     } catch (error) {
-      console.error('Error submitting feedback:', error);
+      console.error(
+        'Error submitting feedback:',
+        error.response.data.errors.Message
+      );
+      setError(error.response.data.errors.Message);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
@@ -252,8 +256,9 @@ const ContactUs = () => {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className='tw-mb-6 tw-p-4 tw-rounded-lg tw-bg-red-50 tw-border-l-4 tw-border-red-500 tw-text-red-700'>
-                  There was a problem submitting your feedback. Please try
-                  again.
+                  {error && { error }
+                    ? error
+                    : 'An error occurred while submitting yourfeedback. Please try again.'}
                 </motion.div>
               )}
 

@@ -19,8 +19,11 @@ const BikePartsDashboard = () => {
   const [errors, setErrors] = useState({});
   const [previewImage, setPreviewImage] = useState(null);
   const [bikeParts, setBikeParts] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [bikePartToDelete, setBikePartToDelete] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isTableLoading, setIsTableLoading] = useState(true);
 
   const processBikePartsResponse = (response) => {
@@ -114,7 +117,8 @@ const BikePartsDashboard = () => {
     if (!bikePartData.partImage)
       newErrors.partImage = 'Bike Part Image is required';
     if (!bikePartData.CompatibleBikesJson.trim())
-      newErrors.CompatibleBikesJson = 'At least one compatible bike is required';
+      newErrors.CompatibleBikesJson =
+        'At least one compatible bike is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -155,7 +159,7 @@ const BikePartsDashboard = () => {
       .then((res) => {
         if (res.status === 201) {
           toast.success(res.data.message);
-          setIsModalOpen(false);
+          setIsAddModalOpen(false);
           fetchBikeParts();
           resetForm();
         }
@@ -170,23 +174,33 @@ const BikePartsDashboard = () => {
       });
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete?')) {
-      setIsTableLoading(true);
-      deleteBikePartsApi(id)
-        .then((res) => {
-          if (res.status === 201) {
-            toast.success(res.data.message);
-            fetchBikeParts();
-          }
-        })
-        .catch((err) => {
-          const errorMessage =
-            err.response?.data?.message || 'Something went wrong';
-          toast.error(errorMessage);
-          setIsTableLoading(false);
-        });
-    }
+  const openDeleteModal = (bikePart) => {
+    setBikePartToDelete(bikePart);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDelete = () => {
+    if (!bikePartToDelete) return;
+
+    setIsDeleting(true);
+
+    deleteBikePartsApi(bikePartToDelete._id)
+      .then((res) => {
+        if (res.status === 200) {
+          toast.success(res.data.message);
+          fetchBikeParts();
+          setIsDeleteModalOpen(false);
+          setBikePartToDelete(null);
+        }
+      })
+      .catch((err) => {
+        const errorMessage =
+          err.response?.data?.message || 'Something went wrong';
+        toast.error(errorMessage);
+      })
+      .finally(() => {
+        setIsDeleting(false);
+      });
   };
 
   const resetForm = () => {
@@ -205,7 +219,7 @@ const BikePartsDashboard = () => {
   // Handle click outside modal to close
   const handleClickOutside = (e) => {
     if (e.target.classList.contains('modal-overlay')) {
-      setIsModalOpen(false);
+      setIsAddModalOpen(false);
       resetForm();
     }
   };
@@ -222,7 +236,7 @@ const BikePartsDashboard = () => {
       <div className='flex justify-between items-center mb-6'>
         <h1 className='text-3xl font-bold'>BikeParts Dashboard</h1>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setIsAddModalOpen(true)}
           className='bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300'>
           Add Bike Parts
         </button>
@@ -275,7 +289,7 @@ const BikePartsDashboard = () => {
                     <button
                       type='button'
                       className='bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition duration-300'
-                      onClick={() => handleDelete(bikePart._id)}>
+                      onClick={() => openDeleteModal(bikePart)}>
                       Delete
                     </button>
                   </td>
@@ -295,7 +309,8 @@ const BikePartsDashboard = () => {
         </div>
       )}
 
-      {isModalOpen && (
+      {/* Add Bike Parts Modal */}
+      {isAddModalOpen && (
         <div
           className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 modal-overlay'
           onClick={handleClickOutside}>
@@ -389,7 +404,7 @@ const BikePartsDashboard = () => {
                 <button
                   type='button'
                   onClick={() => {
-                    setIsModalOpen(false);
+                    setIsAddModalOpen(false);
                     resetForm();
                   }}
                   className='bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300'
@@ -419,6 +434,57 @@ const BikePartsDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && bikePartToDelete && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
+          <div className='bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md'>
+            <h2 className='text-2xl font-semibold mb-4'>Confirm Delete</h2>
+            <p className='mb-6'>
+              Are you sure you want to delete the bike part{' '}
+              <span className='font-semibold'>{bikePartToDelete.partName}</span>
+              ? This action cannot be undone.
+            </p>
+            <div className='flex justify-end space-x-3'>
+              <button
+                type='button'
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setBikePartToDelete(null);
+                }}
+                className='bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300'
+                disabled={isDeleting}>
+                Cancel
+              </button>
+              <button
+                type='button'
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className='bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-300 flex items-center justify-center min-w-[80px]'>
+                {isDeleting ? (
+                  <div className='spinner w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                ) : (
+                  'Delete'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+        .animate-spin {
+          animation: spin 1s linear infinite;
+        }
+      `}</style>
     </div>
   );
 };
