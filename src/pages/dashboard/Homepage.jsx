@@ -280,18 +280,18 @@ const Homepage = () => {
           </motion.div>
           <div className='tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-8'>
             <TestimonialCard
-              text='The convenience of having my bike serviced right at my doorstep is amazing. The technicians are professional and thorough!'
-              author='John Smith'
+              text='RideRevive’s service is truly effective. I can get my bike serviced while staying at home in Kathmandu — it’s super convenient!'
+              author='Apil Jung Thapa'
               role='Regular Customer'
             />
             <TestimonialCard
-              text='I was impressed with how quickly they responded to my service request. My bike has never performed better!'
-              author='Emma Johnson'
-              role='Bicycle Enthusiast'
+              text='The technician arrived right after I placed a service request. My bike runs better than ever now — thank you, RideRevive!'
+              author='Sakchyam Thapa'
+              role='Motorcycle Enthusiast'
             />
             <TestimonialCard
-              text='The quality of service and parts is exceptional. I recommend Ride Revive to all my cycling friends.'
-              author='Michael Brown'
+              text='The service quality and parts are excellent. I recommend RideRevive to all my friends who ride.'
+              author='Miraj Deep Bhandari'
               role='Weekend Rider'
             />
           </div>

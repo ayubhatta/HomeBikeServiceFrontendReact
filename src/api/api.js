@@ -33,10 +33,12 @@ const user = JSON.parse(localStorage.getItem('user'));
 
 export const userID = user?.id || '';
 // Create API
-export const registerUserApi = (data) => Api.post('/api/user/register', data);
+export const registerUserApi = (data) => 
+  Api.post('/api/user/register', data);
 
 // Login API
-export const loginUserApi = (data) => Api.post('/api/user/login', data);
+export const loginUserApi = (data) => 
+  Api.post('/api/user/login', data);
 
 // Forgot Password API
 export const forgotPasswordApi = (data) =>
@@ -60,7 +62,6 @@ export const getCurrentUserApi = () => Api.get(`/api/user/${userID}`, config);
 export const getAllUsersApi = () => Api.get('/api/user', config);
 
 // Update Role to Mechanic
-
 export const updateRoleToMechanicApi = (id) =>
   Api.put(`/api/user/updateuserroletomechanic/${id}`, config);
 
@@ -70,14 +71,16 @@ export const createBikeApi = (data) =>
   FileApi.post('/api/bikeProducts/create', data, config);
 
 // get all bike API
-export const getAllBikeApi = () => Api.get('/api/bikeProducts/all', config);
+export const getAllBikeApi = () => 
+  Api.get('/api/bikeProducts/all', config);
 
 // get bike model
 export const getBikeByModel = (bikeName) =>
   Api.get(`api/bikeProducts/bikeName/${bikeName}`, config);
 
 // get single bike api
-export const getSingleBike = (id) => Api.get(`api/bikeProducts/${id}`, config);
+export const getSingleBike = (id) => 
+  Api.get(`api/bikeProducts/${id}`, config);
 
 // delete bike api
 export const deleteBikeApi = (id) =>
@@ -87,19 +90,12 @@ export const deleteBikeApi = (id) =>
 export const updateBikeApi = (id, data) =>
   FileApi.put(`api/bikeProducts/${id}`, data, config);
 
-// pagination
-export const paginationApi = (page, limit) =>
-  Api.get(`/api/bike/pagination?page=${page}&limit=${limit}`, config);
-
-//
-export const bikeCount = () => {
-  return Api.get(`/api/bike/bike_count`, config);
-};
 // =============================== Bike Parts API ===========================================
 export const createBikePartsApi = (data) =>
   FileApi.post('/api/bikeParts/create', data);
 
-export const getAllBikePartsApi = () => Api.get('/api/bikeParts', config);
+export const getAllBikePartsApi = () => 
+  Api.get('/api/bikeParts', config);
 
 export const updateBikePartsApi = (id, data) =>
   FileApi.put(`/api/bikeParts/${id}`, data, config);
@@ -113,9 +109,11 @@ export const deleteBikePartsApi = (id) =>
 
 
 // ================================ Cart Api =============
-export const addToCartApi = (data) => Api.post('/api/cart/add', data, config);
+export const addToCartApi = (data) => 
+  Api.post('/api/cart/add', data, config);
 
-export const getCartApi = () => Api.get('/api/cart/user', config);
+export const getCartApi = () => 
+  Api.get('/api/cart/user', config);
 
 export const deleteCartApi = (userId = userID) =>
   Api.delete(`/api/cart/delete/${userId}`, config);
@@ -127,7 +125,8 @@ export const deleteCartItemApi = (cartid) => {
 export const updateCartApi = (cartid, data) =>
   Api.put(`/api/cart/${cartid}`, data, config);
 
-export const createOrderApi = (data) => Api.put(`/api/cart/pay`, data, config);
+export const createOrderApi = (data) => 
+  Api.put(`/api/cart/pay`, data, config);
 
 // =============================== Bookings API ===========================================
 
@@ -136,10 +135,12 @@ export const addToBookingApi = (data) =>
   Api.post('/api/booking/add', data, config);
 
 // Display Booking
-export const getAllBookingApi = () => Api.get('/api/booking/getall', config);
+export const getAllBookingApi = () => 
+  Api.get('/api/booking/getall', config);
 
 // Delete Booking
-export const deleteBookingApi = (id) => Api.delete(`/api/booking/delete/${id}`);
+export const deleteBookingApi = (id) => 
+  Api.delete(`/api/booking/delete/${id}`);
 
 // User Booking
 export const userBookingApi = (userID) =>
@@ -154,50 +155,16 @@ export const cancelBookingApi = (id) => {
 export const getDashboardStats = () =>
   Api.get('/api/dashboard/total-counts', config);
 
-// ================================= Message API ===========================================
-export const sendMessageApi = (message) =>
-  Api.post('/api/messages/send', message, config);
-export const getMessagesApi = (id, page) =>
-  Api.get(`/api/messages/get/${id}?page=${page}`, config);
-
-export const getByIdApi = (id) =>
-  Api.get(`/api/messages/get_by_id/${id}`, config);
-
-export const updateMessageApi = (id, message) =>
-  Api.put(`/api/messages/update/${id}`, message, config);
-
-export const deleteMessageApi = (id) =>
-  Api.delete(`/api/messages/delete/${id}`, config);
-
-export const getChatListApi = () => Api.get(`/api/messages/get`, config);
-
-export const sendFileApi = (data, config) =>
-  Api.post(`/api/messages/send/file`, data, config);
-
-// ================================== Message File ==========================
-export const messageFileUrl = 'http://localhost:5000/messages/files';
-export const messageImageUrl = 'http://localhost:5000/messages/images';
-
-// =============================== Notification =========================
-export const getNotificationApi = () =>
-  Api.get(`/api/notifications/get`, config);
-
-export const readNotificationApi = (id) =>
-  Api.put(`/api/notifications/read/${id}`, config);
-
-// ================================ send notification =======================
-export const sendNotificationApi = (data) =>
-  Api.post(`/api/notifications/send`, data, jsonConfig);
-
 // ================================ Feedback API ==============================
 
 export const sendFeedbackApi = (data) =>
   Api.post('/api/feedback/add', data, config);
 
 export const getFeedbackApi = () => Api.get('/api/feedback/all', config);
+
 // =================== Payment ======================
 export const initializeKhaltiPaymentApi = (data) =>
-  Api.post('/api/payment/initialize_khalti', data, jsonConfig);
+  Api.post('/api/payment/makepayment', data, jsonConfig);
 
 // ===================== Mechanic API ========================
 export const getAllMechanicsApi = () => Api.get('/api/mechanics', config);
